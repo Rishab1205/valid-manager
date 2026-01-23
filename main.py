@@ -29,6 +29,7 @@ import discord
 from discord.ext import commands, tasks
 
 TOKEN = os.getenv("TOKEN")  # Replit Secret
+print("DEBUG TOKEN:", TOKEN)
 
 intents = discord.Intents.default()
 intents.message_content = True
