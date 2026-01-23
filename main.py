@@ -1,11 +1,6 @@
-# ================= KEEP ALIVE =================
+# ================== KEEP ALIVE (FOR UPTIME ROBOT) ==================
 from flask import Flask
 from threading import Thread
-import os
-import time
-import asyncio
-from collections import deque
-import datetime
 
 app = Flask('')
 
@@ -19,212 +14,74 @@ def run_web():
 def keep_alive():
     Thread(target=run_web).start()
 
-# =============================================
-# ================= DISCORD BOT ================
+# ===================== DISCORD BOT CODE ============================
+import os
 import discord
+import asyncio
+import datetime
 from discord.ext import commands, tasks
 from discord import app_commands
 
-TOKEN = os.getenv("TOKEN")
-print("DEBUG TOKEN:", TOKEN)
-
-start_time = datetime.datetime.utcnow()
+TOKEN = os.getenv("TOKEN")  # Token from Railway Variables
+if TOKEN is None:
+    print("❌ ERROR: TOKEN is missing from Railway Variables.")
+else:
+    print("TOKEN LOADED")
 
 intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
 intents.guilds = True
+intents.members = True
+intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-tree = bot.tree
+start_time = datetime.datetime.utcnow()
 
-# ---------- RAID CONFIG ----------
-RAID_JOIN_LIMIT = 5
-RAID_TIME_WINDOW = 10
-LOCK_DURATION = 300  # 5 minutes
-
-ASSISTANT_ROLE_ID = 1214555365954560030
-SQUIRE_ROLE_ID = 1214555001473732609
-
-join_tracker = deque()
-server_locked = False
-# --------------------------------
-
-
-# ---------- MEMBERSHIP EMBED ----------
-def membership_embed():
-    embed = discord.Embed(
-        title="💎 OFFICIAL VALID GAMING – YT MEMBERSHIP",
-        description="Support the channel & unlock exclusive perks 🔥",
-        color=0x2f3136)
-
-    embed.add_field(name="🥇 GOLD – ₹59 / month",
-                    value="• Custom member badges",
-                    inline=False)
-    
-    embed.add_field(name="🥈 PLATINUM – ₹119 / month",
-                    value="• Member-only Shorts",
-                    inline=False)
-    
-    embed.add_field(name="💠 DIAMOND – ₹179 / month",
-                    value="• Friend Request\n• Member Shout-out",
-                    inline=False)
-
-    embed.add_field(
-        name="🎯 Join Now",
-        value="[Click here to join](https://youtube.com/@officialvalidgaming/join)",
-        inline=False)
-
-    embed.set_footer(text="VALID GAMING • Official Membership")
-    return embed
-
-# ---------- STATUS ----------
+# ================================================================
 @bot.event
 async def on_ready():
-    print(f"✅ {bot.user} is online 🚀")
-    update_status.start()
     try:
-        synced = await tree.sync()
-        print(f"Slash commands synced: {len(synced)}")
+        synced = await bot.tree.sync()
+        print(f"⚙️ Slash commands synced: {len(synced)}")
     except Exception as e:
-        print(e)
+        print("Slash Sync Error:", e)
 
+    print(f"🟢 {bot.user} is online & ready!")
+    update_status.start()
 
-@tasks.loop(minutes=2)
+# ================== STATUS ROTATION ==============================
+@tasks.loop(seconds=60)
 async def update_status():
-    if not bot.guilds:
-        return
-    guild = bot.guilds[0]
-    await bot.change_presence(activity=discord.Activity(
-        type=discord.ActivityType.watching,
-        name=f"{guild.member_count} users | Valid Subs"))
+    guild_count = len(bot.guilds)
+    await bot.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.watching,
+            name=f"{guild_count} servers | /uptime"
+        )
+    )
 
+# ================== SLASH: SAY COMMAND ===========================
+@bot.tree.command(name="say", description="Make bot send a message in a channel")
+@app_commands.describe(channel="Where to send message", message="Message content")
+async def slash_say(interaction: discord.Interaction, channel: discord.TextChannel, message: str):
+    await channel.send(message)
+    await interaction.response.send_message("📨 Message sent!", ephemeral=True)
 
-# ---------- LOCK / UNLOCK ----------
-async def lock_server(guild):
-    global server_locked
-    if server_locked:
-        return
+# ================== SLASH: UPTIME COMMAND ========================
+@bot.tree.command(name="uptime", description="Shows bot uptime")
+async def slash_uptime(interaction: discord.Interaction):
+    now = datetime.datetime.utcnow()
+    delta = now - start_time
+    hours, remainder = divmod(int(delta.total_seconds()), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    await interaction.response.send_message(
+        f"⏱️ Uptime: **{hours}h {minutes}m {seconds}s**"
+    )
 
-    server_locked = True
-    everyone = guild.default_role
-
-    for channel in guild.text_channels:
-        await channel.set_permissions(everyone, send_messages=False)
-
-    channel = guild.system_channel or guild.text_channels[0]
-
-    assistant = guild.get_role(ASSISTANT_ROLE_ID)
-    squire = guild.get_role(SQUIRE_ROLE_ID)
-
-    pings = ""
-    if assistant: pings += assistant.mention + " "
-    if squire: pings += squire.mention
-
-    await channel.send(
-        f"🚨 **ANTI-RAID ACTIVATED**\n{pings}\nChat locked for **5 minutes**.")
-
-    await asyncio.sleep(LOCK_DURATION)
-
-    for channel in guild.text_channels:
-        await channel.set_permissions(everyone, send_messages=True)
-
-    await channel.send("✅ **ANTI-RAID DISABLED**\nChat unlocked.")
-    server_locked = False
-
-
-# ---------- MEMBER JOIN ----------
-@bot.event
-async def on_member_join(member):
-    now = time.time()
-    join_tracker.append(now)
-
-    while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
-        join_tracker.popleft()
-
-    if len(join_tracker) >= RAID_JOIN_LIMIT:
-        await lock_server(member.guild)
-
-    try:
-        embed = discord.Embed(
-            title="📜 Welcome to VALID DC",
-            description=(f"Hello **{member.name}** 👋\n\n"
-                         "1️⃣ Be respectful\n"
-                         "2️⃣ No spam or scams\n"
-                         "3️⃣ Follow Discord TOS\n\n"
-                         "🔗 https://discord.gg/jyuYckmyFG"),
-            color=0x2f3136)
-        await member.send(embed=embed)
-    except discord.Forbidden:
-        pass
-
-    await update_status()
-
-
-@bot.event
-async def on_member_remove(member):
-    update_status.restart()
-
-
-# ---------- MESSAGE AUTOREPLIES ----------
-PRICE_TRIGGERS = ["price", "prices", "how much"]
-
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    text = message.content.lower()
-
-    if any(t in text for t in PRICE_TRIGGERS):
-        await message.channel.send(embed=membership_embed())
-
-    elif "how to buy" in text:
-        await message.channel.send("🛒 Buy via YouTube Membership. Type **price** to see plans.")
-
-    elif "rules" in text:
-        await message.channel.send("📜 Rules were sent in your DMs.")
-
-    elif "link" in text:
-        await message.channel.send("🔗 https://youtube.com/@officialvalidgaming")
-
-    await bot.process_commands(message)
-
-
-# ---------- PREFIX COMMANDS ----------
+# ================== TEXT COMMANDS (OPTIONAL) =====================
 @bot.command()
 async def ping(ctx):
     await ctx.send("🏓 Pong! Bot is alive.")
 
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def say(ctx, channel: discord.TextChannel, *, message: str):
-    await channel.send(message)
-    await ctx.message.delete()
-
-
-# ---------- SLASH COMMANDS ----------
-@tree.command(name="ping", description="Check bot latency")
-async def ping_cmd(interaction: discord.Interaction):
-    await interaction.response.send_message("🏓 Pong! Bot is alive.")
-
-
-@tree.command(name="price", description="Show membership prices")
-async def price_cmd(interaction: discord.Interaction):
-    await interaction.response.send_message(embed=membership_embed())
-
-
-@tree.command(name="uptime", description="Show bot uptime")
-async def uptime_cmd(interaction: discord.Interaction):
-    now = datetime.datetime.utcnow()
-    delta = now - start_time
-    hours, remainder = divmod(int(delta.total_seconds()), 3600)
-    mins, secs = divmod(remainder, 60)
-    await interaction.response.send_message(
-        f"⏳ Uptime: **{hours}h {mins}m {secs}s**")
-
-
-# ================= START =================
+# ====================== STARTUP ================================
 keep_alive()
 bot.run(TOKEN)
