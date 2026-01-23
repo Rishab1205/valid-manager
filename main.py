@@ -5,31 +5,30 @@ import os
 import time
 import asyncio
 from collections import deque
+import datetime
 
 app = Flask('')
-
 
 @app.route('/')
 def home():
     return "Bot is alive!"
 
-
 def run_web():
     app.run(host='0.0.0.0', port=8080)
-
 
 def keep_alive():
     Thread(target=run_web).start()
 
-
-# ============================================
-
-# ================= DISCORD BOT =================
+# =============================================
+# ================= DISCORD BOT ================
 import discord
 from discord.ext import commands, tasks
+from discord import app_commands
 
-TOKEN = os.getenv("TOKEN")  # Replit Secret
+TOKEN = os.getenv("TOKEN")
 print("DEBUG TOKEN:", TOKEN)
+
+start_time = datetime.datetime.utcnow()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -37,6 +36,7 @@ intents.members = True
 intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
+tree = bot.tree
 
 # ---------- RAID CONFIG ----------
 RAID_JOIN_LIMIT = 5
@@ -51,11 +51,43 @@ server_locked = False
 # --------------------------------
 
 
+# ---------- MEMBERSHIP EMBED ----------
+def membership_embed():
+    embed = discord.Embed(
+        title="💎 OFFICIAL VALID GAMING – YT MEMBERSHIP",
+        description="Support the channel & unlock exclusive perks 🔥",
+        color=0x2f3136)
+
+    embed.add_field(name="🥇 GOLD – ₹59 / month",
+                    value="• Custom member badges",
+                    inline=False)
+    
+    embed.add_field(name="🥈 PLATINUM – ₹119 / month",
+                    value="• Member-only Shorts",
+                    inline=False)
+    
+    embed.add_field(name="💠 DIAMOND – ₹179 / month",
+                    value="• Friend Request\n• Member Shout-out",
+                    inline=False)
+
+    embed.add_field(
+        name="🎯 Join Now",
+        value="[Click here to join](https://youtube.com/@officialvalidgaming/join)",
+        inline=False)
+
+    embed.set_footer(text="VALID GAMING • Official Membership")
+    return embed
+
 # ---------- STATUS ----------
 @bot.event
 async def on_ready():
     print(f"✅ {bot.user} is online 🚀")
     update_status.start()
+    try:
+        synced = await tree.sync()
+        print(f"Slash commands synced: {len(synced)}")
+    except Exception as e:
+        print(e)
 
 
 @tasks.loop(minutes=2)
@@ -86,10 +118,8 @@ async def lock_server(guild):
     squire = guild.get_role(SQUIRE_ROLE_ID)
 
     pings = ""
-    if assistant:
-        pings += assistant.mention + " "
-    if squire:
-        pings += squire.mention
+    if assistant: pings += assistant.mention + " "
+    if squire: pings += squire.mention
 
     await channel.send(
         f"🚨 **ANTI-RAID ACTIVATED**\n{pings}\nChat locked for **5 minutes**.")
@@ -116,13 +146,14 @@ async def on_member_join(member):
         await lock_server(member.guild)
 
     try:
-        embed = discord.Embed(title="📜 Welcome to VALID DC",
-                              description=(f"Hello **{member.name}** 👋\n\n"
-                                           "1️⃣ Be respectful\n"
-                                           "2️⃣ No spam or scams\n"
-                                           "3️⃣ Follow Discord TOS\n\n"
-                                           "🔗 https://discord.gg/jyuYckmyFG"),
-                              color=0x2f3136)
+        embed = discord.Embed(
+            title="📜 Welcome to VALID DC",
+            description=(f"Hello **{member.name}** 👋\n\n"
+                         "1️⃣ Be respectful\n"
+                         "2️⃣ No spam or scams\n"
+                         "3️⃣ Follow Discord TOS\n\n"
+                         "🔗 https://discord.gg/jyuYckmyFG"),
+            color=0x2f3136)
         await member.send(embed=embed)
     except discord.Forbidden:
         pass
@@ -135,39 +166,8 @@ async def on_member_remove(member):
     update_status.restart()
 
 
-# ---------- MEMBERSHIP EMBED ----------
-def membership_embed():
-    embed = discord.Embed(
-        title="💎 OFFICIAL VALID GAMING – YT MEMBERSHIP",
-        description="Support the channel & unlock exclusive perks 🔥",
-        color=0x2f3136)
-
-    
-    embed.add_field(name="🥇 GOLD – ₹59 / month",
-                    value="• Custom member badges",
-                    inline=False)
-    
-    embed.add_field(name="🥈 PLATINUM – ₹119 / month",
-                    value="• Member-only Shorts",
-                    inline=False)
-    
-    embed.add_field(name="💠 DIAMOND – ₹179 / month",
-                    value="• Friend Request\n• Member Shout-out",
-                    inline=False)
-
-    embed.add_field(
-        name="🎯 Join Now",
-        value=
-        "[Click here to join](https://youtube.com/@officialvalidgaming/join)",
-        inline=False)
-
-    embed.set_footer(text="VALID GAMING • Official Membership")
-    return embed
-
-
-# ---------- MESSAGE HANDLER ----------
+# ---------- MESSAGE AUTOREPLIES ----------
 PRICE_TRIGGERS = ["price", "prices", "how much"]
-
 
 @bot.event
 async def on_message(message):
@@ -180,21 +180,18 @@ async def on_message(message):
         await message.channel.send(embed=membership_embed())
 
     elif "how to buy" in text:
-        await message.channel.send(
-            "🛒 Buy via YouTube Membership. Type **price** to see plans.")
+        await message.channel.send("🛒 Buy via YouTube Membership. Type **price** to see plans.")
 
     elif "rules" in text:
         await message.channel.send("📜 Rules were sent in your DMs.")
 
     elif "link" in text:
-        await message.channel.send("🔗 https://youtube.com/@officialvalidgaming"
-                                   )
+        await message.channel.send("🔗 https://youtube.com/@officialvalidgaming")
 
-    # ⚠️ THIS LINE MUST ALWAYS BE LAST
     await bot.process_commands(message)
 
 
-# ---------- COMMANDS ----------
+# ---------- PREFIX COMMANDS ----------
 @bot.command()
 async def ping(ctx):
     await ctx.send("🏓 Pong! Bot is alive.")
@@ -205,6 +202,27 @@ async def ping(ctx):
 async def say(ctx, channel: discord.TextChannel, *, message: str):
     await channel.send(message)
     await ctx.message.delete()
+
+
+# ---------- SLASH COMMANDS ----------
+@tree.command(name="ping", description="Check bot latency")
+async def ping_cmd(interaction: discord.Interaction):
+    await interaction.response.send_message("🏓 Pong! Bot is alive.")
+
+
+@tree.command(name="price", description="Show membership prices")
+async def price_cmd(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=membership_embed())
+
+
+@tree.command(name="uptime", description="Show bot uptime")
+async def uptime_cmd(interaction: discord.Interaction):
+    now = datetime.datetime.utcnow()
+    delta = now - start_time
+    hours, remainder = divmod(int(delta.total_seconds()), 3600)
+    mins, secs = divmod(remainder, 60)
+    await interaction.response.send_message(
+        f"⏳ Uptime: **{hours}h {mins}m {secs}s**")
 
 
 # ================= START =================
