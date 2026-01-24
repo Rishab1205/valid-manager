@@ -1,11 +1,10 @@
-# sheet.py
 import os
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SHEET_ID = os.getenv("SHEET_ID")
-PRIMARY_FIELD = os.getenv("PRIMARY_FIELD", "Discord ID")  # default: Discord ID
+PRIMARY_FIELD = os.getenv("PRIMARY_FIELD", "Discord ID")
 
 def get_sheet_service():
     creds = Credentials.from_service_account_info({
@@ -32,18 +31,20 @@ def find_user_row(discord_id: str):
     ).execute()
 
     rows = result.get("values", [])
-    header = rows[0]
+    if not rows:
+        return None, None, None
 
+    header = rows[0]
     if PRIMARY_FIELD not in header:
-        return None, None
+        return None, None, None
 
     col_index = header.index(PRIMARY_FIELD)
 
     for i, row in enumerate(rows[1:], start=2):
         if len(row) > col_index and row[col_index] == discord_id:
-            return i, row
+            return i, header, row
 
-    return None, None
+    return None, None, None
 
 
 def update_role_assigned(row_number: int):
