@@ -197,6 +197,69 @@ async def price(interaction: Interaction):
 
 @bot.command()
 async def ping(ctx): await ctx.send("🏓 Pong!")
+    
+from discord.app_commands import MissingPermissions
+
+@tree.command(name="close", description="Close this ticket")
+@app_commands.checks.has_role(STAFF_ROLE_ID)
+async def close(interaction: Interaction):
+    guild = interaction.guild
+    channel = interaction.channel
+    member = None
+
+    # Identify ticket owner by parsing name
+    if channel.name.startswith("ticket-"):
+        name = channel.name.replace("ticket-", "")
+        for m in guild.members:
+            if m.name.lower() == name.lower():
+                member = m
+                break
+
+    archive = guild.get_channel(ARCHIVE_CATEGORY_ID)
+    log_channel = guild.get_channel(LOG_CHANNEL_ID)
+
+    if not archive:
+        return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
+
+    # Move channel to archive
+    await channel.edit(category=archive)
+
+    # Remove member access, keep staff access
+    for overwrite_target, overwrite in channel.overwrites.items():
+        if isinstance(overwrite_target, discord.Member):
+            await channel.set_permissions(overwrite_target, view_channel=False)
+        if isinstance(overwrite_target, discord.Role) and overwrite_target.id == STAFF_ROLE_ID:
+            await channel.set_permissions(overwrite_target, view_channel=True)
+
+    await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
+
+    # DM user summary
+    if member:
+        try:
+            dm_embed = discord.Embed(
+                title="🎫 Ticket Closed",
+                description="Your support ticket has been closed.\nIf you need help again, just open a new one!",
+                color=0x5865F2
+            )
+            await member.send(embed=dm_embed)
+        except:
+            pass
+
+    # Log it
+    if log_channel:
+        await log_channel.send(
+            f"📂 **Ticket archived** by {interaction.user.mention}\n"
+            f"🧾 Channel: `{channel.name}`\n"
+            f"👤 User: `{member.name if member else 'Unknown'}`"
+        )
+
+
+@close.error
+async def close_error(interaction: Interaction, error):
+    if isinstance(error, MissingPermissions):
+        await interaction.response.send_message("❌ Staff only command.", ephemeral=True)
+    else:
+        await interaction.response.send_message("⚠️ Something went wrong.", ephemeral=True)
 
 # ================= START =================
 keep_alive()
