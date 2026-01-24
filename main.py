@@ -19,6 +19,7 @@ def run_web():
 def keep_alive():
     Thread(target=run_web).start()
 
+
 # =============================================
 # ================= DISCORD BOT ================
 import discord
@@ -43,12 +44,8 @@ RAID_JOIN_LIMIT = 5
 RAID_TIME_WINDOW = 10
 LOCK_DURATION = 300  # 5 minutes
 
-ASSISTANT_ROLE_ID = 1214555365954560030
-SQUIRE_ROLE_ID = 1214555001473732609
-
 join_tracker = deque()
 server_locked = False
-# --------------------------------
 
 
 # ---------- MEMBERSHIP EMBED ----------
@@ -77,6 +74,7 @@ def membership_embed():
 
     embed.set_footer(text="VALID GAMING • Official Membership")
     return embed
+
 
 # ---------- STATUS ----------
 @bot.event
@@ -114,15 +112,8 @@ async def lock_server(guild):
 
     channel = guild.system_channel or guild.text_channels[0]
 
-    assistant = guild.get_role(ASSISTANT_ROLE_ID)
-    squire = guild.get_role(SQUIRE_ROLE_ID)
-
-    pings = ""
-    if assistant: pings += assistant.mention + " "
-    if squire: pings += squire.mention
-
     await channel.send(
-        f"🚨 **ANTI-RAID ACTIVATED**\n{pings}\nChat locked for **5 minutes**.")
+        f"🚨 **ANTI-RAID ACTIVATED**\nChat locked for **5 minutes**.")
 
     await asyncio.sleep(LOCK_DURATION)
 
@@ -133,7 +124,14 @@ async def lock_server(guild):
     server_locked = False
 
 
-# ---------- MEMBER JOIN ----------
+# =========================
+#  GOOGLE SHEETS + ROLES
+# =========================
+from sheet import find_user_row, update_role_assigned
+
+MEMBER_ROLE_ID = int(os.getenv("DISCORD_MEMBER_ROLE_ID"))
+STAFF_ROLE_ID = int(os.getenv("DISCORD_STAFF_ROLE_ID"))
+
 @bot.event
 async def on_member_join(member):
     now = time.time()
@@ -145,14 +143,29 @@ async def on_member_join(member):
     if len(join_tracker) >= RAID_JOIN_LIMIT:
         await lock_server(member.guild)
 
+    # -------- SHEET ROLE LOGIC --------
+    row, data = find_user_row(str(member.id))
+    if row:
+        print(f"[SHEET] Found user in row {row}, assigning roles")
+        member_role = member.guild.get_role(MEMBER_ROLE_ID)
+        staff_role = member.guild.get_role(STAFF_ROLE_ID)
+
+        if member_role:
+            await member.add_roles(member_role)
+            print(f"[ROLE] Added MEMBER role to {member}")
+
+        if staff_role:
+            await member.add_roles(staff_role)
+            print(f"[ROLE] Added STAFF role to {member}")
+
+        update_role_assigned(row)
+        print(f"[SHEET] Updated RoleAssigned = TRUE")
+
+    # -------- WELCOME DM --------
     try:
         embed = discord.Embed(
             title="📜 Welcome to VALID DC",
-            description=(f"Hello **{member.name}** 👋\n\n"
-                         "1️⃣ Be respectful\n"
-                         "2️⃣ No spam or scams\n"
-                         "3️⃣ Follow Discord TOS\n\n"
-                         "🔗 https://discord.gg/jyuYckmyFG"),
+            description="To activate your purchase, open a ticket!",
             color=0x2f3136)
         await member.send(embed=embed)
     except discord.Forbidden:
