@@ -295,7 +295,7 @@ async def close(interaction: Interaction):
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
     
     # DM user that ticket closed
-if member:
+    if member:
     try:
         closed_embed = discord.Embed(
             title="🎫 Ticket Closed",
