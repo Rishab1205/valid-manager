@@ -25,11 +25,11 @@ TICKET_CATEGORY_ID = int(os.getenv("TICKET_CATEGORY_ID"))
 ARCHIVE_CATEGORY_ID = int(os.getenv("ARCHIVE_CATEGORY_ID"))
 PAYOUT_CHANNEL_ID = int(os.getenv("PAYOUT_CHANNEL_ID"))
 LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID"))
-STAFF_LOGIC = os.getenv("STAFF_LOGIC", "B")   # B = sheet decides
+STAFF_LOGIC = os.getenv("STAFF_LOGIC", "B")
 PAYMODE = "B"
 STATUS_FIELD = "Status"
 
-GIF_LINK = "https://cdn.discordapp.com/attachments/1214620206329241660/1464784224035803320/a_e8bcf2f0719b83d332a02913ff57752e.gif?ex=6976ba1d&is=6975689d&hm=ea7445c7d039e864681ea73ac9c1109409bae7a280f7df38ead2cfaff38a4f6d&"
+GIF_LINK = "https://cdn.discordapp.com/attachments/1214620206329241660/1464784224035803320/a_e8bcf2f0719b83d332a02913ff57752e.gif"
 
 intents = discord.Intents.default()
 intents.members = True
@@ -126,7 +126,8 @@ Upload your screenshot in → <#{PAYOUT_CHANNEL_ID}>
     embed = discord.Embed(title="Welcome to Support", description=desc, color=0x2b2d31)
     await ticket.send(embed=embed, view=ClaimButton(member))
 
-    if log: await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
+    if log:
+        await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
 
     # DM customer purchase confirmation only if PAID
     status = data.get(STATUS_FIELD, "").upper()
@@ -143,7 +144,6 @@ Upload your screenshot in → <#{PAYOUT_CHANNEL_ID}>
             await member.send(embed=dm)
         except:
             pass
-
 # ================= ROLE + PROCESS LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
@@ -204,9 +204,9 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    # RAID Logic
     now = time.time()
     join_tracker.append(now)
+
     while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
         join_tracker.popleft()
 
@@ -219,7 +219,8 @@ async def on_member_join(member):
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
 async def update_status():
-    if not bot.guilds: return
+    if not bot.guilds:
+        return
     guild = bot.guilds[0]
     await bot.change_presence(
         activity=discord.Activity(
@@ -231,7 +232,8 @@ async def update_status():
 # ================= LOCK SERVER =================
 async def lock_server(guild):
     global server_locked
-    if server_locked: return
+    if server_locked:
+        return
     server_locked = True
 
     everyone = guild.default_role
@@ -244,7 +246,7 @@ async def lock_server(guild):
         await c.set_permissions(everyone, send_messages=True)
 
     server_locked = False
-    
+
 # ================= SYNC COMMAND =================
 @bot.command()
 async def sync(ctx):
@@ -293,31 +295,31 @@ async def close(interaction: Interaction):
             await channel.set_permissions(overwrite_target, view_channel=True)
 
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
-    
-    # DM user that ticket closed
-if member:
-    try:
-        closed_embed = discord.Embed(
-            title="🎫 Ticket Closed",
-            description=(
-                f"Your support ticket has been closed.\n\n"
-                "❤️ **Thank you for choosing Finest Store** ❤️\n"
-                "_Performance is personal._\n\n"
-                "If you ever need anything again, just open a new ticket!"
-            ),
-            color=0xff4757
-        )
-        closed_embed.set_thumbnail(url=GIF_LINK)
-        await member.send(embed=closed_embed)
-    except Exception as e:
-        print("[DM-ERROR] Could not DM ticket closed:", e)
+
+    if member:
+        try:
+            closed_embed = discord.Embed(
+                title="🎫 Ticket Closed",
+                description=(
+                    f"Your support ticket has been closed.\n\n"
+                    "❤️ **Thank you for choosing Finest Store** ❤️\n"
+                    "_Performance is personal._\n\n"
+                    "If you ever need anything again, just open a new ticket!"
+                ),
+                color=0xff4757
+            )
+            closed_embed.set_thumbnail(url=GIF_LINK)
+            await member.send(embed=closed_embed)
+        except Exception as e:
+            print("[DM-ERROR] Could not DM ticket closed:", e)
 
     if log_channel:
         await log_channel.send(
             f"📂 **Ticket archived** by {interaction.user.mention}\n"
             f"🧾 Channel: `{channel.name}`\n"
             f"👤 User: `{member.name if member else 'Unknown'}`"
-        
+        )
+
 @close.error
 async def close_error(interaction: Interaction, error):
     if isinstance(error, MissingPermissions):
