@@ -14,7 +14,6 @@ def keep_alive(): Thread(target=run_web).start()
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands, ui, Interaction, ButtonStyle
-
 from sheet import find_user_row, update_role_assigned
 
 TOKEN = os.getenv("TOKEN")
@@ -38,7 +37,6 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
-
 start_time = datetime.datetime.utcnow()
 
 # ================= RAID DETECTION =================
@@ -51,66 +49,62 @@ server_locked = False
 # ================= MEMBERSHIP EMBED =================
 def membership_embed():
     embed = discord.Embed(
-    title="💎 VALID GAMING — YT MEMBERSHIP",
-    description=(
-        "Support the channel & unlock exclusive perks 🔥\n"
-        "Membership is processed via **YouTube** and auto-syncs to Discord.\n\n"
-        "**Available Tiers:**"
-    ),
-    color=0x2B2D31  # plane dark gray
-)
+        title="💎 VALID GAMING — YT MEMBERSHIP",
+        description=(
+            "Support the channel & unlock exclusive perks 🔥\n"
+            "Membership is processed via **YouTube** and auto-syncs to Discord.\n\n"
+            "**Available Tiers:**"
+        ),
+        color=0x2B2D31
+    )
 
-# ----- MEMBERSHIP TIERS -----
-embed.add_field(
-    name="🥇 GOLD — ₹59 / month",
-    value="• Custom member **Badges**",
-    inline=False
-)
+    embed.add_field(
+        name="🥇 GOLD — ₹59 / month",
+        value="• Custom member **Badges**",
+        inline=False
+    )
 
-embed.add_field(
-    name="🥈 PLATINUM — ₹119 / month",
-    value="• Member-only **Shorts**",
-    inline=False
-)
+    embed.add_field(
+        name="🥈 PLATINUM — ₹119 / month",
+        value="• Member-only **Shorts**",
+        inline=False
+    )
 
-embed.add_field(
-    name="💠 DIAMOND — ₹179 / month",
-    value="• **Friend Request**\n• **Member Shout-out**",
-    inline=False
-)
+    embed.add_field(
+        name="💠 DIAMOND — ₹179 / month",
+        value="• **Friend Request**\n• **Member Shout-out**",
+        inline=False
+    )
 
-# ----- JOIN BUTTON -----
-embed.add_field(
-    name="🎯 Join Now",
-    value="[Click here to join](https://youtube.com/@officialvalidgaming/join)",
-    inline=False
-)
+    embed.add_field(
+        name="🎯 Join Now",
+        value="[Click here to join](https://youtube.com/@officialvalidgaming/join)",
+        inline=False
+    )
 
-# ----- ROLE SYNCING HELP -----
-embed.add_field(
-    name="🔗 How to get your Membership Role",
-    value=(
-        "1. Link your **YouTube** account to **Discord**.\n"
-        "2. Go to `User Settings` → `Connections` → **YouTube**.\n"
-        "3. Authorize & link your Google account.\n"
-        "4. Join the server through your **YouTube Membership** tab.\n"
-        "5. Discord auto-syncs & assigns your membership role.\n\n"
-        "**Membership Roles:**\n"
-        "• `@YouTube Member`\n"
-        "• `@Gold`\n"
-        "• `@Platinum`\n"
-        "• `@Diamond`\n\n"
-        "If roles don’t sync or you're stuck, just ask in support."
-    ),
-    inline=False
-)
+    embed.add_field(
+        name="🔗 How to get your Membership Role",
+        value=(
+            "1. Link your **YouTube** account to **Discord**.\n"
+            "2. Go to `User Settings` → `Connections` → **YouTube**.\n"
+            "3. Authorize & link your Google account.\n"
+            "4. Join the server through your **YouTube Membership** tab.\n"
+            "5. Discord auto-syncs & assigns your membership role.\n\n"
+            "**Membership Roles:**\n"
+            "• `@YouTube Member`\n"
+            "• `@Gold`\n"
+            "• `@Platinum`\n"
+            "• `@Diamond`\n\n"
+            "If roles don’t sync or you're stuck, just ask in support."
+        ),
+        inline=False
+    )
 
-# ----- IMAGES -----
-embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457814947756249262/1b2d8db2-332e-42ce-80c5-54d946086c95.png?ex=695d5f78&is=695c0df8&hm=b9d50252c94669ca727b92a6a17a4fc0885f5f3428693964418bde3050cf5a43&")
-embed.set_image(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457812767846301779/Colorful_Abstract_Aesthetic_Linkedin_Banner.png?ex=695d5d70&is=695c0bf0&hm=54158c4f4872f943f7dad394bbe31419d2320158f07d94bb2ff20a1997b04a22&")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457814947756249262/1b2d8db2-332e-42ce-80c5-54d946086c95.png?ex=695d5f78&is=695c0df8&hm=b9d50252c94669ca727b92a6a17a4fc0885f5f3428693964418bde3050cf5a43&")
+    embed.set_image(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457812767846301779/Colorful_Abstract_Aesthetic_Linkedin_Banner.png?ex=695d5d70&is=695c0bf0&hm=54158c4f4872f943f7dad394bbe31419d2320158f07d94bb2ff20a1997b04a22&")
+    embed.set_footer(text="VALID GAMING • Official Membership")
 
-embed.set_footer(text="VALID GAMING • Official Membership")
-
+    return embed
 
 # ================= STAFF CLAIM BUTTON =================
 class ClaimButton(ui.View):
@@ -129,7 +123,6 @@ class ClaimButton(ui.View):
         )
 
         await interaction.response.send_message(f"👑 {interaction.user.mention} claimed this ticket.")
-
         log = bot.get_channel(LOG_CHANNEL_ID)
         if log:
             await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
@@ -179,7 +172,6 @@ Upload your screenshot in → <#{PAYOUT_CHANNEL_ID}>
     if log:
         await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
 
-    # DM customer purchase confirmation only if PAID
     status = data.get(STATUS_FIELD, "").upper()
     if PAYMODE == "B" and status == "PAID":
         try:
@@ -194,6 +186,7 @@ Upload your screenshot in → <#{PAYOUT_CHANNEL_ID}>
             await member.send(embed=dm)
         except:
             pass
+
 # ================= ROLE + PROCESS LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
@@ -224,7 +217,6 @@ async def process_member(member):
 # ================= WELCOME DM =================
 async def send_join_dm(member):
     try:
-        # Embed 1 — Welcome
         embed1 = discord.Embed(
             title="👋 Welcome to **VALID DC**",
             description=(
@@ -237,11 +229,10 @@ async def send_join_dm(member):
                 "💬 **Main Chat:** `#chat`\n"
                 "🛠 **Support:** Open a ticket anytime\n"
             ),
-            color=0x2b2d31  # dark neutral
+            color=0x2b2d31
         )
         embed1.set_footer(text="VALID DC • Established for serious players")
 
-        # Embed 2 — Rules & Conduct
         embed2 = discord.Embed(
             title="📜 **Quick Rules & Conduct**",
             description=(
@@ -254,15 +245,13 @@ async def send_join_dm(member):
                 "If you ever feel confused or need help — staff are **one ticket away**.\n\n"
                 "Glad to have you here — now go make some moves. ❤️"
             ),
-            color=0x5865F2  # discord blurple for contrast
+            color=0x5865F2
         )
         embed2.set_footer(text="Stay respectful • Stay sharp • Stay valid")
 
         await member.send(embeds=[embed1, embed2])
-
     except Exception as e:
         print("[DM-ERROR] Could not send onboarding DM:", e)
-
 
 # ================= EVENTS =================
 @bot.event
@@ -279,10 +268,8 @@ async def on_ready():
 async def on_member_join(member):
     now = time.time()
     join_tracker.append(now)
-
     while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
         join_tracker.popleft()
-
     if len(join_tracker) >= RAID_JOIN_LIMIT:
         await lock_server(member.guild)
 
@@ -369,6 +356,7 @@ async def close(interaction: Interaction):
 
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
 
+    # DM closed
     if member:
         try:
             closed_embed = discord.Embed(
