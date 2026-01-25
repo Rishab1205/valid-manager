@@ -51,16 +51,66 @@ server_locked = False
 # ================= MEMBERSHIP EMBED =================
 def membership_embed():
     embed = discord.Embed(
-        title="💎 OFFICIAL VALID GAMING – YT MEMBERSHIP",
-        description="Support the channel & unlock exclusive perks 🔥",
-        color=0x2f3136
-    )
-    embed.add_field(name="🥇 GOLD – ₹59", value="• Custom Badges", inline=False)
-    embed.add_field(name="🥈 PLATINUM – ₹119", value="• Shorts Access", inline=False)
-    embed.add_field(name="💠 DIAMOND – ₹179", value="• FR + Shout-outs", inline=False)
-    embed.add_field(name="🎯 Join Now", value="[Click](https://youtube.com/@officialvalidgaming/join)", inline=False)
-    embed.set_footer(text="VALID GAMING • Membership")
-    return embed
+    title="💎 VALID GAMING — YT MEMBERSHIP",
+    description=(
+        "Support the channel & unlock exclusive perks 🔥\n"
+        "Membership is processed via **YouTube** and auto-syncs to Discord.\n\n"
+        "**Available Tiers:**"
+    ),
+    color=0x2B2D31  # plane dark gray
+)
+
+# ----- MEMBERSHIP TIERS -----
+embed.add_field(
+    name="🥇 GOLD — ₹59 / month",
+    value="• Custom member **Badges**",
+    inline=False
+)
+
+embed.add_field(
+    name="🥈 PLATINUM — ₹119 / month",
+    value="• Member-only **Shorts**",
+    inline=False
+)
+
+embed.add_field(
+    name="💠 DIAMOND — ₹179 / month",
+    value="• **Friend Request**\n• **Member Shout-out**",
+    inline=False
+)
+
+# ----- JOIN BUTTON -----
+embed.add_field(
+    name="🎯 Join Now",
+    value="[Click here to join](https://youtube.com/@officialvalidgaming/join)",
+    inline=False
+)
+
+# ----- ROLE SYNCING HELP -----
+embed.add_field(
+    name="🔗 How to get your Membership Role",
+    value=(
+        "1. Link your **YouTube** account to **Discord**.\n"
+        "2. Go to `User Settings` → `Connections` → **YouTube**.\n"
+        "3. Authorize & link your Google account.\n"
+        "4. Join the server through your **YouTube Membership** tab.\n"
+        "5. Discord auto-syncs & assigns your membership role.\n\n"
+        "**Membership Roles:**\n"
+        "• `@YouTube Member`\n"
+        "• `@Gold`\n"
+        "• `@Platinum`\n"
+        "• `@Diamond`\n\n"
+        "If roles don’t sync or you're stuck, just ask in support."
+    ),
+    inline=False
+)
+
+# ----- IMAGES -----
+embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457814947756249262/1b2d8db2-332e-42ce-80c5-54d946086c95.png?ex=695d5f78&is=695c0df8&hm=b9d50252c94669ca727b92a6a17a4fc0885f5f3428693964418bde3050cf5a43&")
+embed.set_image(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457812767846301779/Colorful_Abstract_Aesthetic_Linkedin_Banner.png?ex=695d5d70&is=695c0bf0&hm=54158c4f4872f943f7dad394bbe31419d2320158f07d94bb2ff20a1997b04a22&")
+
+embed.set_footer(text="VALID GAMING • Official Membership")
+
 
 # ================= STAFF CLAIM BUTTON =================
 class ClaimButton(ui.View):
@@ -174,22 +224,45 @@ async def process_member(member):
 # ================= WELCOME DM =================
 async def send_join_dm(member):
     try:
+        # Embed 1 — Welcome
         embed1 = discord.Embed(
-            title="📜 Welcome to VALID DC",
-            description=f"Hello {member.name} 👋\n\n1️⃣ Be respectful\n2️⃣ No spam or scams\n3️⃣ Follow Discord TOS\n\n🔗 https://discord.gg/jvuYckmyFC",
-            color=0x2b2d31
+            title="👋 Welcome to **VALID DC**",
+            description=(
+                f"Hey **{member.name}**, welcome aboard! 🔥\n\n"
+                "You're now part of a community built for gamers who respect:\n"
+                "• **Performance**\n"
+                "• **Discipline**\n"
+                "• **Clean gameplay**\n\n"
+                "Whether you're chilling, grinding, or need premium support — you're in the right place 🚀\n\n"
+                "💬 **Main Chat:** `#chat`\n"
+                "🛠 **Support:** Open a ticket anytime\n"
+            ),
+            color=0x2b2d31  # dark neutral
         )
-        embed2 = discord.Embed(
-            title="Welcome to VALID DC 🔥",
-            description=f"Hello {member.name} 👋\n➖ Thanks for joining **VALID DC**\n➖ If you face any problem, visit **#chat**\n\nHave fun in there! 🕹️🔥",
-            color=0x2b2d31
-        )
-        embed2.set_image(url=GIF_LINK)
+        embed1.set_footer(text="VALID DC • Established for serious players")
 
-        await member.send(embed=embed1)
-        await member.send(embed=embed2)
-    except:
-        pass
+        # Embed 2 — Rules & Conduct
+        embed2 = discord.Embed(
+            title="📜 **Quick Rules & Conduct**",
+            description=(
+                "Before you jump in, here's the quick code we live by:\n\n"
+                "1️⃣ **Respect everyone** — no harassment or hate.\n"
+                "2️⃣ **No spam / self-promo** — keep chat clean & human.\n"
+                "3️⃣ **No scams or shady links** — instant ban.\n"
+                "4️⃣ **Follow Discord TOS** — no exceptions.\n\n"
+                "⚠️ Violations may lead to warnings, mutes, or bans.\n\n"
+                "If you ever feel confused or need help — staff are **one ticket away**.\n\n"
+                "Glad to have you here — now go make some moves. ❤️"
+            ),
+            color=0x5865F2  # discord blurple for contrast
+        )
+        embed2.set_footer(text="Stay respectful • Stay sharp • Stay valid")
+
+        await member.send(embeds=[embed1, embed2])
+
+    except Exception as e:
+        print("[DM-ERROR] Could not send onboarding DM:", e)
+
 
 # ================= EVENTS =================
 @bot.event
