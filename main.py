@@ -317,8 +317,7 @@ if member:
             f"📂 **Ticket archived** by {interaction.user.mention}\n"
             f"🧾 Channel: `{channel.name}`\n"
             f"👤 User: `{member.name if member else 'Unknown'}`"
-        )
-
+        
 @close.error
 async def close_error(interaction: Interaction, error):
     if isinstance(error, MissingPermissions):
