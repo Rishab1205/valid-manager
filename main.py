@@ -295,7 +295,7 @@ async def close(interaction: Interaction):
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
     
     # DM user that ticket closed
-    if member:
+if member:
     try:
         closed_embed = discord.Embed(
             title="🎫 Ticket Closed",
@@ -307,7 +307,7 @@ async def close(interaction: Interaction):
             ),
             color=0xff4757
         )
-        closed_embed.set_thumbnail(url=GIF_URL)
+        closed_embed.set_thumbnail(url=GIF_LINK)
         await member.send(embed=closed_embed)
     except Exception as e:
         print("[DM-ERROR] Could not DM ticket closed:", e)
