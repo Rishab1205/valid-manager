@@ -229,7 +229,7 @@ async def on_ready():
     
     for guild in bot.guilds:
         try:
-            await tree.sync(guild=guild)
+            await tree.sync(guild=discord.Object(id=GUILD_ID))
             print(f"🔗 Synced slash commands to → {guild.name}")
         except Exception as e:
             print(f"❌ Sync failed for {guild.name}: {e}")
