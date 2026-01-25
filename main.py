@@ -50,15 +50,17 @@ def membership_embed():
     embed = discord.Embed(
         title="💎 VALID GAMING — YT MEMBERSHIP",
         description=(
-            "Support the channel & unlock exclusive perks 🔥\n"
+            "Support the channel & unlock exclusive perks 🛠️\n"
             "Memberships are processed via **YouTube** and auto-sync to Discord.\n\n"
             "**Available Tiers:**\n"
         ),
         color=0x2B2D31
     )
 
-    embed.add_field(name="🥇 GOLD — ₹59/month", value="• Custom member **Badges**", inline=False)
-    embed.add_field(name="🥈 PLATINUM — ₹119/month", value="• Member-only **Shorts**", inline=False)
+    embed.add_field(name="🧈 GOLD — ₹59/month", value="• Custom member **Badges**", inline=False)
+    
+    embed.add_field(name="💷 PLATINUM — ₹119/month", value="• Member-only **Shorts**", inline=False)
+    
     embed.add_field(name="💠 DIAMOND — ₹179/month", value="• **Friend Request** + **Shout-out**", inline=False)
 
     embed.add_field(
@@ -100,7 +102,7 @@ class ClaimButton(ui.View):
             view_channel=True, send_messages=True, attach_files=True
         )
 
-        await interaction.response.send_message(f"👑 {interaction.user.mention} claimed this ticket.")
+        await interaction.response.send_message(f"👮🏻‍♂️ {interaction.user.mention} claimed this ticket.")
         log = bot.get_channel(LOG_CHANNEL_ID)
         if log: await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
 
@@ -188,14 +190,14 @@ async def send_join_dm(member):
         embed = discord.Embed(
             title="👋 Welcome to VALID DC",
             description=(
-                f"Hey **{member.name}**, welcome aboard! 🔥\n\n"
+                f"Hey **{member.name}**, welcome aboard! 🎭\n\n"
                 "You're now part of a community built for gamers who respect:\n"
                 "• Performance\n"
                 "• Discipline\n"
                 "• Clean gameplay\n\n"
-                "**Useful Areas**\n"
-                "💬 Main Chat — `#chat`\n"
-                "🛠 Support — Open ticket anytime\n\n"
+                "**Useful Areas**\n"            
+                "🏷️ Main Chat — `#chat`\n"            
+                "⚙ Support — Open ticket anytime\n\n"
                 "**Rules & Conduct**\n"
                 "• Respect everyone\n"
                 "• No spam or self-promo\n"
