@@ -294,16 +294,23 @@ async def close(interaction: Interaction):
 
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
     
-    if member:
-        try:
-            dm_embed = discord.Embed(
-                title="🎫 Ticket Closed",
-                description="Your support ticket has been closed.\nIf you need help again, just open a new one!",
-                color=0x5865F2
-            )
-            await member.send(embed=dm_embed)
-        except:
-            pass
+    # DM user that ticket closed
+if member:
+    try:
+        closed_embed = discord.Embed(
+            title="🎫 Ticket Closed",
+            description=(
+                f"Your support ticket has been closed.\n\n"
+                "❤️ **Thank you for choosing Finest Store** ❤️\n"
+                "_Performance is personal._\n\n"
+                "If you ever need anything again, just open a new ticket!"
+            ),
+            color=0xff4757
+        )
+        closed_embed.set_thumbnail(url=GIF_URL)
+        await member.send(embed=closed_embed)
+    except Exception as e:
+        print("[DM-ERROR] Could not DM ticket closed:", e)
 
     if log_channel:
         await log_channel.send(
