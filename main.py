@@ -14,6 +14,8 @@ def keep_alive(): Thread(target=run_web).start()
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands, ui, Interaction, ButtonStyle
+from discord.ui import Modal, TextInput
+from discord.app_commands import MissingPermissions
 
 from sheet import find_user_row, update_role_assigned
 
@@ -58,9 +60,7 @@ def membership_embed():
     )
 
     embed.add_field(name="🧈  GOLD — RS 59 / Month", value="• Custom member **Badges**", inline=False)
-    
     embed.add_field(name="💷 PLATINUM — RS 119 / Month", value="• Member-only **Shorts**", inline=False)
-    
     embed.add_field(name="💠 DIAMOND — RS 179 / Month", value="• **Friend Request** + **Shout-out**", inline=False)
 
     embed.add_field(
@@ -71,7 +71,6 @@ def membership_embed():
 
     embed.add_field(
         name="🔗  Role Sync Instructions",
-        
         value=(
             "1. Link **YouTube → Discord** in User Settings\n"
             "2. Go to `Connections`\n"
@@ -102,10 +101,31 @@ class ClaimButton(ui.View):
             interaction.user,
             view_channel=True, send_messages=True, attach_files=True
         )
-
         await interaction.response.send_message(f"👮🏻‍♂️ {interaction.user.mention} claimed this ticket.")
+
         log = bot.get_channel(LOG_CHANNEL_ID)
         if log: await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
+
+# ================= TICKET MODAL =================
+class TicketModal(Modal, title="Open Support Ticket"):
+    reason = TextInput(
+        label="What do you need help with?",
+        placeholder="Example: payment issue, tool help, verification...",
+        style=discord.TextStyle.long,
+        required=True,
+        max_length=300
+    )
+
+    def __init__(self, member):
+        super().__init__()
+        self.member = member
+
+    async def on_submit(self, interaction: Interaction):
+        header = ["Name", "Product", "Payment ID", "Status", "Reason"]
+        row = [self.member.name, "MANUAL", "N/A", "OPEN", str(self.reason)]
+
+        await interaction.response.send_message("🎫 Ticket created!", ephemeral=True)
+        await create_ticket(self.member, header, row)
 
 # ================= TICKET CREATION =================
 async def create_ticket(member: discord.Member, header, row):
@@ -147,24 +167,12 @@ Upload your screenshot → <#{PAYOUT_CHANNEL_ID}>
 """
 
     await ticket.send(embed=discord.Embed(title="Welcome to Support", description=desc, color=0x2B2D31), view=ClaimButton(member))
-    if log: await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
 
-    status = data.get(STATUS_FIELD, "").upper()
-    if PAYMODE == "B" and status == "PAID":
-        try:
-            dm = discord.Embed(
-                title="🎉 Payment Confirmed!",
-                description=(
-                    f"Hey {member.name} 👋\n"
-                    "Your purchase was successful!\n\n"
-                    f"📁 **Ticket:** {ticket.mention}\n"
-                    f"📸 **Next step:** Upload screenshot in → <#{PAYOUT_CHANNEL_ID}>\n\n"
-                    "✨ **Thanks for choosing FINEST — performance is personal**"
-                ),
-                color=0x2B2D31
-            )
-            await member.send(embed=dm)
-        except: pass
+    # staff notify
+    if staff_role:
+        await ticket.send(f"🔔 **Staff Notice:** {staff_role.mention} please assist this user.")
+
+    if log: await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
 
 # ================= ROLE LOGIC =================
 async def process_member(member):
@@ -196,15 +204,14 @@ async def send_join_dm(member):
                 "• Performance\n"
                 "• Discipline\n"
                 "• Clean gameplay\n\n"
-                "**Useful Areas**\n"            
-                "🏷️ Main Chat — `#chat`\n"            
+                "**Useful Areas**\n"
+                "🏷️ Main Chat — `#chat`\n"
                 "⚙ Support — Open ticket anytime\n\n"
                 "**Rules & Conduct**\n"
                 "• Respect everyone\n"
                 "• No spam or self-promo\n"
                 "• No scams or shady links\n"
                 "• Follow Discord TOS\n\n"
-                "Violations can result in mutes, warnings or bans.\n\n"
                 "If you ever need help — staff are one ticket away ❤️"
             ),
             color=0x2B2D31
@@ -226,10 +233,13 @@ async def on_ready():
 async def on_member_join(member):
     now = time.time()
     join_tracker.append(now)
+
     while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
         join_tracker.popleft()
+
     if len(join_tracker) >= RAID_JOIN_LIMIT:
         await lock_server(member.guild)
+
     await send_join_dm(member)
     await process_member(member)
 
@@ -267,19 +277,33 @@ async def sync(ctx):
     synced = await tree.sync()
     await ctx.send(f"Synced {len(synced)} commands.")
 
-# ================= SLASH =================
+# ================= /ticket COMMAND =================
+@tree.command(name="ticket", description="Open a support ticket")
+async def ticket_cmd(interaction: Interaction):
+    member = interaction.user
+    guild = interaction.guild
+
+    for c in guild.text_channels:
+        if c.name == f"ticket-{member.name}":
+            return await interaction.response.send_message(
+                "⚠️ You already have an open ticket.",
+                ephemeral=True
+            )
+
+    await interaction.response.send_modal(TicketModal(member))
+
+# ================= /uptime =================
 @tree.command(name="uptime")
 async def uptime(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
     await interaction.response.send_message(f"⏳ `{delta}`")
 
+# ================= /price =================
 @tree.command(name="price")
 async def price(interaction: Interaction):
     await interaction.response.send_message(embed=membership_embed())
 
-# ================= CLOSE TICKET =================
-from discord.app_commands import MissingPermissions
-
+# ================= CLOSE =================
 @tree.command(name="close", description="Close this ticket")
 @app_commands.checks.has_role(STAFF_ROLE_ID)
 async def close(interaction: Interaction):
