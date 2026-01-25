@@ -25,7 +25,11 @@ TICKET_CATEGORY_ID = int(os.getenv("TICKET_CATEGORY_ID"))
 ARCHIVE_CATEGORY_ID = int(os.getenv("ARCHIVE_CATEGORY_ID"))
 PAYOUT_CHANNEL_ID = int(os.getenv("PAYOUT_CHANNEL_ID"))
 LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID"))
-STAFF_LOGIC = os.getenv("STAFF_LOGIC", "B")
+STAFF_LOGIC = os.getenv("STAFF_LOGIC", "B")   # B = sheet decides
+PAYMODE = "B"
+STATUS_FIELD = "Status"
+
+GIF_LINK = "https://cdn.discordapp.com/attachments/1214620206329241660/1464784224035803320/a_e8bcf2f0719b83d332a02913ff57752e.gif?ex=6976ba1d&is=6975689d&hm=ea7445c7d039e864681ea73ac9c1109409bae7a280f7df38ead2cfaff38a4f6d&"
 
 intents = discord.Intents.default()
 intents.members = True
@@ -60,33 +64,32 @@ def membership_embed():
 
 # ================= STAFF CLAIM BUTTON =================
 class ClaimButton(ui.View):
-    def __init__(self, member, sheet_row):
+    def __init__(self, member):
         super().__init__(timeout=None)
         self.member = member
-        self.sheet_row = sheet_row
 
     @ui.button(label="Claim Ticket", style=ButtonStyle.blurple)
     async def claim(self, interaction: Interaction, button: ui.Button):
         if STAFF_ROLE_ID not in [r.id for r in interaction.user.roles]:
             return await interaction.response.send_message("❌ Staff only.", ephemeral=True)
 
-        await interaction.channel.set_permissions(interaction.user,
-            view_channel=True, send_messages=True, attach_files=True)
+        await interaction.channel.set_permissions(
+            interaction.user,
+            view_channel=True, send_messages=True, attach_files=True
+        )
 
         await interaction.response.send_message(f"👑 {interaction.user.mention} claimed this ticket.")
 
         log = bot.get_channel(LOG_CHANNEL_ID)
-        if log: await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
-
+        if log:
+            await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
 
 # ================= TICKET CREATION =================
 async def create_ticket(member: discord.Member, header, row):
-
     guild = member.guild
     category = guild.get_channel(TICKET_CATEGORY_ID)
     log = bot.get_channel(LOG_CHANNEL_ID)
 
-    # build map: {header: value}
     data = dict(zip(header, row))
 
     ticket = await guild.create_text_channel(
@@ -112,23 +115,31 @@ async def create_ticket(member: discord.Member, header, row):
 📤 **Payment Verification**
 Upload your screenshot → <#{PAYOUT_CHANNEL_ID}>
 
-🗂 **Purchase Details**
-• Name: `{data.get('Name','N/A')}`
-• Product: `{data.get('Product','N/A')}`
-• Payment ID: `{data.get('Payment ID','N/A')}`
-• Status: `{data.get('Status','N/A')}`
-
 ✨ Finest Support • Zero friction, just service.
 """
-
     embed = discord.Embed(title="Welcome to Support", description=desc, color=0x2b2d31)
-    await ticket.send(embed=embed, view=ClaimButton(member, row))
+    await ticket.send(embed=embed, view=ClaimButton(member))
 
     if log: await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
 
-# ================= ROLE + TICKET LOGIC =================
-async def process_member(member):
+    # DM customer purchase confirmation only if PAID
+    status = data.get(STATUS_FIELD, "").upper()
+    if PAYMODE == "B" and status == "PAID":
+        try:
+            dm = discord.Embed(
+                title="🎉 Payment Confirmed!",
+                description=f"Hi {member.mention} 👋\nYour purchase was successful!",
+                color=0x2b2d31
+            )
+            dm.add_field(name="📁 Ticket", value=ticket.mention, inline=False)
+            dm.add_field(name="📸 Next step", value=f"Upload screenshot in → <#{PAYOUT_CHANNEL_ID}>", inline=False)
+            dm.set_footer(text="✨ Thanks for choosing FINEST — performance is personal.")
+            await member.send(embed=dm)
+        except:
+            pass
 
+# ================= ROLE + PROCESS LOGIC =================
+async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
     if not row_index:
         print("[SHEET] No match for", member.name)
@@ -154,21 +165,64 @@ async def process_member(member):
 
     await create_ticket(member, header, row)
 
+# ================= WELCOME DM =================
+async def send_join_dm(member):
+    try:
+        embed1 = discord.Embed(
+            title="📜 Welcome to VALID DC",
+            description=f"Hello {member.name} 👋\n\n1️⃣ Be respectful\n2️⃣ No spam or scams\n3️⃣ Follow Discord TOS\n\n🔗 https://discord.gg/jvuYckmyFC",
+            color=0x2b2d31
+        )
+        embed2 = discord.Embed(
+            title="Welcome to VALID DC 🔥",
+            description=f"Hello {member.name} 👋\n➖ Thanks for joining **VALID DC**\n➖ If you face any problem, visit **#chat**\n\nHave fun in there! 🕹️🔥",
+            color=0x2b2d31
+        )
+        embed2.set_image(url=GIF_LINK)
+
+        await member.send(embed=embed1)
+        await member.send(embed=embed2)
+    except:
+        pass
+
 # ================= EVENTS =================
 @bot.event
+async def on_ready():
+    print(f"✅ {bot.user} is online 🚀")
+    update_status.start()
+    try:
+        await tree.sync()
+        print("Slash commands synced!")
+    except Exception as e:
+        print(e)
+
+@bot.event
 async def on_member_join(member):
+    # RAID Logic
     now = time.time()
     join_tracker.append(now)
     while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
         join_tracker.popleft()
 
     if len(join_tracker) >= RAID_JOIN_LIMIT:
-        print("RAID DETECTED")
         await lock_server(member.guild)
 
+    await send_join_dm(member)
     await process_member(member)
 
-# ================= RAID =================
+# ================= PRESENCE =================
+@tasks.loop(minutes=2)
+async def update_status():
+    if not bot.guilds: return
+    guild = bot.guilds[0]
+    await bot.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.watching,
+            name=f"{guild.member_count} users | Valid Subs"
+        )
+    )
+
+# ================= LOCK SERVER =================
 async def lock_server(guild):
     global server_locked
     if server_locked: return
@@ -185,7 +239,7 @@ async def lock_server(guild):
 
     server_locked = False
 
-# ================= SLASH CMDS =================
+# ================= SLASH COMMANDS =================
 @tree.command(name="uptime", description="Bot uptime")
 async def uptime(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
@@ -195,9 +249,7 @@ async def uptime(interaction: Interaction):
 async def price(interaction: Interaction):
     await interaction.response.send_message(embed=membership_embed())
 
-@bot.command()
-async def ping(ctx): await ctx.send("🏓 Pong!")
-    
+# ================= CLOSE TICKET =================
 from discord.app_commands import MissingPermissions
 
 @tree.command(name="close", description="Close this ticket")
@@ -207,7 +259,6 @@ async def close(interaction: Interaction):
     channel = interaction.channel
     member = None
 
-    # Identify ticket owner by parsing name
     if channel.name.startswith("ticket-"):
         name = channel.name.replace("ticket-", "")
         for m in guild.members:
@@ -221,11 +272,9 @@ async def close(interaction: Interaction):
     if not archive:
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
 
-    # Move channel to archive
     await channel.edit(category=archive)
 
-    # Remove member access, keep staff access
-    for overwrite_target, overwrite in channel.overwrites.items():
+    for overwrite_target in list(channel.overwrites):
         if isinstance(overwrite_target, discord.Member):
             await channel.set_permissions(overwrite_target, view_channel=False)
         if isinstance(overwrite_target, discord.Role) and overwrite_target.id == STAFF_ROLE_ID:
@@ -233,7 +282,6 @@ async def close(interaction: Interaction):
 
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
 
-    # DM user summary
     if member:
         try:
             dm_embed = discord.Embed(
@@ -245,14 +293,12 @@ async def close(interaction: Interaction):
         except:
             pass
 
-    # Log it
     if log_channel:
         await log_channel.send(
             f"📂 **Ticket archived** by {interaction.user.mention}\n"
             f"🧾 Channel: `{channel.name}`\n"
             f"👤 User: `{member.name if member else 'Unknown'}`"
         )
-
 
 @close.error
 async def close_error(interaction: Interaction, error):
@@ -264,4 +310,3 @@ async def close_error(interaction: Interaction, error):
 # ================= START =================
 keep_alive()
 bot.run(TOKEN)
-
