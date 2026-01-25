@@ -226,8 +226,13 @@ async def send_join_dm(member):
 async def on_ready():
     print(f"✅ {bot.user} is online 🚀")
     update_status.start()
-    try: await tree.sync()
-    except Exception as e: print(e)
+    
+    for guild in bot.guilds:
+        try:
+            await tree.sync(guild=guild)
+            print(f"🔗 Synced slash commands to → {guild.name}")
+        except Exception as e:
+            print(f"❌ Sync failed for {guild.name}: {e}")
 
 @bot.event
 async def on_member_join(member):
