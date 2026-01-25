@@ -110,12 +110,18 @@ async def create_ticket(member: discord.Member, header, row):
 
 📌 **Next steps**
 • Wait for a staff member to **claim** your ticket  
-• Once claimed, they will guide you
+• Once claimed, they will guide you through the process
 
 📤 **Payment Verification**
-Upload your screenshot → <#{PAYOUT_CHANNEL_ID}>
+Upload your screenshot in → <#{PAYOUT_CHANNEL_ID}>
 
-✨ Finest Support • Zero friction, just service.
+🗂 **Purchase Details**
+• **Name:** `{data.get('Name','N/A')}`
+• **Product:** `{data.get('Product','N/A')}`
+• **Payment ID:** `{data.get('Payment ID','HIDDEN' if PAYMODE=='b' else data.get('Payment ID','N/A'))}`
+• **Status:** `{data.get('Status','N/A')}`
+
+✨ Finest Support — Zero friction, just service.
 """
     embed = discord.Embed(title="Welcome to Support", description=desc, color=0x2b2d31)
     await ticket.send(embed=embed, view=ClaimButton(member))
