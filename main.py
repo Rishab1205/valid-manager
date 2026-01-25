@@ -57,11 +57,11 @@ def membership_embed():
         color=0x2B2D31
     )
 
-    embed.add_field(name="🧈 GOLD — ₹59/month", value="• Custom member **Badges**", inline=False)
+    embed.add_field(name="🧈  GOLD — RS 59 / Month", value="• Custom member **Badges**", inline=False)
     
-    embed.add_field(name="💷 PLATINUM — ₹119/month", value="• Member-only **Shorts**", inline=False)
+    embed.add_field(name="💷 PLATINUM — RS 119 / Month", value="• Member-only **Shorts**", inline=False)
     
-    embed.add_field(name="💠 DIAMOND — ₹179/month", value="• **Friend Request** + **Shout-out**", inline=False)
+    embed.add_field(name="💠 DIAMOND — RS 179 / Month", value="• **Friend Request** + **Shout-out**", inline=False)
 
     embed.add_field(
         name="How to Join",
@@ -70,7 +70,8 @@ def membership_embed():
     )
 
     embed.add_field(
-        name="🔗 Role Sync Instructions",
+        name="🔗  Role Sync Instructions",
+        
         value=(
             "1. Link **YouTube → Discord** in User Settings\n"
             "2. Go to `Connections`\n"
