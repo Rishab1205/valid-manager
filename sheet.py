@@ -55,3 +55,13 @@ def update_role_assigned(row_number: int):
         valueInputOption="USER_ENTERED",
         body={"values": [["TRUE"]]}
     ).execute()
+
+
+def update_ticket_opened(row_number: int):
+    service = get_sheet_service()
+    service.values().update(
+        spreadsheetId=SHEET_ID,
+        range=f"Sheet1!O{row_number}",
+        valueInputOption="USER_ENTERED",
+        body={"values": [["TRUE"]]}
+    ).execute()
