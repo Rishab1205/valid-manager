@@ -128,7 +128,7 @@ class TicketModal(Modal, title="Open Support Ticket"):
         await create_ticket(self.member, header, row)
 
 # ================= TICKET CREATION =================
-aasync def create_ticket(member: discord.Member, header, row):
+async def create_ticket(member: discord.Member, header, row):
     guild = member.guild
     category = guild.get_channel(TICKET_CATEGORY_ID)
     log = bot.get_channel(LOG_CHANNEL_ID)
@@ -166,13 +166,11 @@ Upload your screenshot → <#{PAYOUT_CHANNEL_ID}>
 
 ✨ Finest Support — Zero friction.
 """
-
     await ticket.send(
         embed=discord.Embed(title="Welcome to Support", description=desc, color=0x2B2D31),
         view=ClaimButton(member)
     )
 
-    # staff notify
     if staff_role:
         await ticket.send(f"🔔 **Staff Notice:** {staff_role.mention} please assist this user.")
 
@@ -180,7 +178,35 @@ Upload your screenshot → <#{PAYOUT_CHANNEL_ID}>
         await log.send(f"📂 Ticket created for {member.name} → {ticket.mention}")
 
     return ticket
-    
+
+# ================= PAYMENT DM (ADDED) =================
+async def send_payment_dm(member, ticket_channel):
+    try:
+        embed = discord.Embed(
+            title="🎉 Payment Confirmed!",
+            description=f"Hey **{member.name}** 👋\nYour purchase was successful!",
+            color=0x2ECC71
+        )
+
+        embed.add_field(
+            name="📁 Ticket",
+            value=f"{ticket_channel.mention}",
+            inline=False
+        )
+
+        embed.add_field(
+            name="💳 Next Step",
+            value=f"Upload your payment screenshot in → <#{PAYOUT_CHANNEL_ID}>",
+            inline=False
+        )
+
+        embed.set_footer(text="✨ Thanks for choosing FINEST — Performance is personal")
+
+        await member.send(embed=embed)
+
+    except Exception as e:
+        print("[DM-ERROR] Payment DM:", e)
+
 # ================= ROLE LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
@@ -199,8 +225,10 @@ async def process_member(member):
 
     update_role_assigned(row_index)
     ticket = await create_ticket(member, header, row)
-    await send_payment_dm(member, ticket)
 
+    status = data.get("Status", "").upper()
+    if status == "PAID":
+        await send_payment_dm(member, ticket)
 
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
@@ -242,33 +270,6 @@ async def on_ready():
             print(f"🔗 Synced slash commands to → {guild.name}")
         except Exception as e:
             print(f"❌ Sync failed for {guild.name}: {e}")
-            
-async def send_payment_dm(member, ticket_channel):
-    try:
-        embed = discord.Embed(
-            title="🎉 Payment Confirmed!",
-            description=f"Hey **{member.name}** 👋\nYour purchase was successful!",
-            color=0x2ECC71
-        )
-
-        embed.add_field(
-            name="📁 Ticket",
-            value=f"{ticket_channel.mention}",
-            inline=False
-        )
-
-        embed.add_field(
-            name="💳 Next Step",
-            value=f"Upload your payment screenshot in → <#{PAYOUT_CHANNEL_ID}>",
-            inline=False
-        )
-
-        embed.set_footer(text="✨ Thanks for choosing FINEST — Performance is personal")
-
-        await member.send(embed=embed)
-
-    except Exception as e:
-        print("[DM-ERROR] Payment DM:", e)
 
 @bot.event
 async def on_member_join(member):
