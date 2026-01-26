@@ -315,11 +315,10 @@ async def lock_server(guild):
 
 # ================= SYNC COMMAND =================
 @bot.command()
-@bot.command()
 async def sync(ctx):
     synced = await bot.tree.sync()
     await ctx.send(f"Globally synced {len(synced)} commands")
-
+    
 # ================= /ticket COMMAND =================
 @tree.command(name="ticket", description="Open a support ticket")
 async def ticket_cmd(interaction: Interaction):
