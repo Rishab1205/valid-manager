@@ -334,21 +334,43 @@ async def ticket_cmd(interaction: Interaction):
 
     await interaction.response.send_modal(TicketModal(member))
 
-# ================= /uptime =================
-@tree.command(name="uptime")
-async def uptime(interaction: Interaction):
-    delta = datetime.datetime.utcnow() - start_time
-    await interaction.response.send_message(f"⏳ `{delta}`")
 
-# ================= /price =================
-@tree.command(name="price")
-async def price(interaction: Interaction):
+# ================= /price COMMAND =================
+@tree.command(name="price", description="View product / membership pricing")
+async def price_cmd(interaction: Interaction):
     await interaction.response.send_message(embed=membership_embed())
 
-# ================= CLOSE =================
-@tree.command(name="close", description="Close this ticket")
+
+# ================= /uptime COMMAND =================
+@tree.command(name="uptime", description="Show bot uptime")
+async def uptime_cmd(interaction: Interaction):
+    delta = datetime.datetime.utcnow() - start_time
+    await interaction.response.send_message(f"⏳ Bot Uptime: `{delta}`")
+
+
+# ================= /help COMMAND =================
+@tree.command(name="help", description="Show bot commands & usage")
+async def help_cmd(interaction: Interaction):
+    embed = discord.Embed(
+        title="🧾 Finest Manager — Commands",
+        description="Here are my available commands:",
+        color=0x2B2D31
+    )
+
+    embed.add_field(name="/ticket", value="Open a support ticket", inline=False)
+    embed.add_field(name="/price", value="View product pricing / membership", inline=False)
+    embed.add_field(name="/uptime", value="Show bot uptime", inline=False)
+    embed.add_field(name="/help", value="Show this help message", inline=False)
+    embed.add_field(name="/close", value="Close your current ticket (Staff Only)", inline=False)
+
+    embed.set_footer(text="Finest Manager — Performance is personal")
+    await interaction.response.send_message(embed=embed)
+
+
+# ================= /close COMMAND =================
+@tree.command(name="close", description="Close this ticket (staff only)")
 @app_commands.checks.has_role(STAFF_ROLE_ID)
-async def close(interaction: Interaction):
+async def close_cmd(interaction: Interaction):
     guild = interaction.guild
     channel = interaction.channel
     member = None
@@ -362,6 +384,7 @@ async def close(interaction: Interaction):
 
     archive = guild.get_channel(ARCHIVE_CATEGORY_ID)
     log_channel = guild.get_channel(LOG_CHANNEL_ID)
+
     if not archive:
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
 
@@ -398,12 +421,14 @@ async def close(interaction: Interaction):
             f"👤 User: `{member.name if member else 'Unknown'}`"
         )
 
-@close.error
-async def close_error(interaction: Interaction, error):
+
+@close_cmd.error
+async def close_cmd_error(interaction: Interaction, error):
     if isinstance(error, MissingPermissions):
         await interaction.response.send_message("❌ Staff only.", ephemeral=True)
     else:
         await interaction.response.send_message("⚠️ Something went wrong.", ephemeral=True)
+
 
 # ================= START =================
 keep_alive()
