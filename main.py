@@ -4,6 +4,9 @@ from threading import Thread
 import os, time, asyncio, datetime
 from collections import deque
 
+# ================= FREE PACK STORAGE =================
+freeClaimUsers = {}
+
 app = Flask('')
 @app.route('/')
 def home(): return "Valid Manager running!"
@@ -283,7 +286,29 @@ async def on_member_join(member):
         await lock_server(member.guild)
 
     await send_join_dm(member)
+
+    # >>> 🔥 FREE PACK AUTO-UNLOCK LOGIC <<<
+    if str(member.id) in freeClaimUsers:
+        data = freeClaimUsers[str(member.id)]
+
+        # DM the drive link
+        try:
+            await member.send(f"🎁 **Free Pack Unlocked!**\nHere is your download link:\n{data['drive']}")
+        except:
+            pass
+
+        # notify backend to unlock browser polling
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            await session.post("http://localhost:3000/freepack-unlock", json={
+                "discord_id": str(member.id)
+            })
+
+        # remove from memory
+        freeClaimUsers.pop(str(member.id), None)
+
     await process_member(member)
+
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
