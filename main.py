@@ -379,6 +379,16 @@ async def uptime_cmd(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
     await interaction.response.send_message(f"⏳ Bot Uptime: `{delta}`")
 
+@tree.command(name="refresh", description="Sync your purchase and get access")
+async def refresh_cmd(interaction: Interaction):
+    await interaction.response.defer(ephemeral=True)
+
+    member = interaction.user
+
+    # run the same processing as join
+    await process_member(member)
+
+    await interaction.followup.send("🔄 Your purchase has been synced! Check your DMs.", ephemeral=True)
 
 # ================= /help COMMAND =================
 @tree.command(name="help", description="Show bot commands & usage")
