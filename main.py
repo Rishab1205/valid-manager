@@ -287,15 +287,24 @@ async def on_member_join(member):
 
     await send_join_dm(member)
 
-    # >>> 🔥 FREE PACK AUTO-UNLOCK LOGIC <<<
-    if str(member.id) in freeClaimUsers:
-        data = freeClaimUsers[str(member.id)]
+    # >>> 🔥 FREE PACK AUTO-UNLOCK LOGIC (BACKEND VERSION) <<<
+import aiohttp
+try:
+    async with aiohttp.ClientSession() as session:
+        async with session.post("http://localhost:3000/freepack-unlock",
+            json={ "discord_id": str(member.id) }) as r:
+            
+            unlock_data = await r.json()
 
-        # DM the drive link
-        try:
-            await member.send(f"🎁 **Free Pack Unlocked!**\nHere is your download link:\n{data['drive']}")
-        except:
-            pass
+            if unlock_data.get("unlock"):
+                try:
+                    await member.send(f"🎁 **Free Pack Unlocked!**\nHere is your download link:\n{unlock_data['drive']}")
+                except:
+                    pass
+                print(f"[FREEPACK] Delivered to {member.name}")
+except Exception as e:
+    print("[FREEPACK-ERROR]", e)
+
 
         # notify backend to unlock browser polling
         import aiohttp
