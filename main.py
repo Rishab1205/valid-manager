@@ -442,28 +442,29 @@ async def close_cmd(interaction: Interaction):
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
         
     if log_channel:
-    await log_channel.send(
-        f"📁 Ticket **closed & archived** by {interaction.user.mention} → {channel.mention}"
-    )
-    await channel.edit(category=archive)
+    # old logging removed
+    pass  # keeps Python happy
 
-    for target in list(channel.overwrites):
-        if isinstance(target, discord.Member):
-            await channel.set_permissions(target, view_channel=False)
-        if isinstance(target, discord.Role) and target.id == STAFF_ROLE_ID:
-            await channel.set_permissions(target, view_channel=True)
+# (logging for archive happens later below)
+await channel.edit(category=archive)
 
-    await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
+for target in list(channel.overwrites):
+    if isinstance(target, discord.Member):
+        await channel.set_permissions(target, view_channel=False)
+    if isinstance(target, discord.Role) and target.id == STAFF_ROLE_ID:
+        await channel.set_permissions(target, view_channel=True)
 
-    if member:
+await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
+
+if member:
     try:
         dm = discord.Embed(
-            title="🎟️ Ticket Closed",
+            title="🎫 Ticket Closed",
             description=(
                 "Your support ticket has been closed.\n\n"
                 "❤️ **Thank you for choosing Finest Store** ❤️\n"
                 "_Performance is personal._\n\n"
-                "If you ever need anything – open a new ticket!"
+                "If you ever need anything — open a new ticket!"
             ),
             color=0x2B2D31
         )
