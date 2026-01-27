@@ -456,27 +456,28 @@ async def close_cmd(interaction: Interaction):
     await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
 
     if member:
-        try:
-            dm = discord.Embed(
-                title="🎫 Ticket Closed",
-                description=(
-                    "Your support ticket has been closed.\n\n"
-                    "❤️ **Thank you for choosing Finest Store** ❤️\n"
-                    "_Performance is personal._\n\n"
-                    "If you ever need anything — open a new ticket!"
-                ),
-                color=0x2B2D31
-            )
-            await member.send(embed=dm)
-        except Exception as e:
-            print("[DM-ERROR] Ticket close DM:", e)
-
-    if log_channel:
-        await log_channel.send(
-            f"📂 **Ticket archived** by {interaction.user.mention}\n"
-            f"🧾 Channel: `{channel.name}`\n"
-            f"👤 User: `{member.name if member else 'Unknown'}`"
+    try:
+        dm = discord.Embed(
+            title="🎟️ Ticket Closed",
+            description=(
+                "Your support ticket has been closed.\n\n"
+                "❤️ **Thank you for choosing Finest Store** ❤️\n"
+                "_Performance is personal._\n\n"
+                "If you ever need anything – open a new ticket!"
+            ),
+            color=0x2B2D31
         )
+        await member.send(embed=dm)
+    except Exception as e:
+        print("[DM-ERROR] Ticket close DM:", e)
+
+if log_channel:
+    await log_channel.send(
+        f"📂 **Ticket archived** by {interaction.user.mention}\n"
+        f"🧾 Channel: `{channel.name}`\n"
+        f"👤 User: `{member.name if member else 'Unknown'}`"
+    )
+
 
 
 @close_cmd.error
