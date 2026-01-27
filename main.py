@@ -461,7 +461,14 @@ async def close_cmd_error(interaction: Interaction, error):
     else:
         await interaction.response.send_message("⚠️ Something went wrong.", ephemeral=True)
 
+@bot.command()
+async def ping(ctx):
+    await ctx.send("🏓 Pong! Bot online.")
 
+@bot.event
+async def on_message(message):
+    # without this, ALL !commands break
+    await bot.process_commands(message)
 # ================= START =================
 keep_alive()
 bot.run(TOKEN)
