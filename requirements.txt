@@ -6,3 +6,5 @@ google-auth-oauthlib
 google-auth-httplib2
 aiohttp==3.9.0
 python-dotenv
+openai
+
