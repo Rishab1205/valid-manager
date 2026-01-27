@@ -63,17 +63,10 @@ def membership_embed():
         ),
         color=0x2B2D31
     )
-
     embed.add_field(name="🧈  GOLD — RS 59 / Month", value="• Custom member **Badges**", inline=False)
     embed.add_field(name="💷 PLATINUM — RS 119 / Month", value="• Member-only **Shorts**", inline=False)
     embed.add_field(name="💠 DIAMOND — RS 179 / Month", value="• **Friend Request** + **Shout-out**", inline=False)
-
-    embed.add_field(
-        name="How to Join",
-        value="[Open Membership Page](https://youtube.com/@officialvalidgaming/join)",
-        inline=False
-    )
-
+    embed.add_field(name="How to Join", value="[Open Membership Page](https://youtube.com/@officialvalidgaming/join)", inline=False)
     embed.add_field(
         name="🔗  Role Sync Instructions",
         value=(
@@ -85,7 +78,6 @@ def membership_embed():
         ),
         inline=False
     )
-
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457814947756249262/1b2d8db2-332e-42ce-80c5-54d946086c95.png")
     embed.set_image(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457812767846301779/Colorful_Abstract_Aesthetic_Linkedin_Banner.png")
     embed.set_footer(text="VALID GAMING • Official Membership")
@@ -128,7 +120,6 @@ class TicketModal(Modal, title="Open Support Ticket"):
     async def on_submit(self, interaction: Interaction):
         header = ["Name", "Product", "Payment ID", "Status", "Reason"]
         row = [self.member.name, "MANUAL", "N/A", "OPEN", str(self.reason)]
-
         await interaction.response.send_message("🎫 Ticket created!", ephemeral=True)
         await create_ticket(self.member, header, row)
 
@@ -138,8 +129,11 @@ async def create_ticket(member: discord.Member, header, row):
     category = guild.get_channel(TICKET_CATEGORY_ID)
     log = bot.get_channel(LOG_CHANNEL_ID)
 
-    data = dict(zip(header, row))
+    if not category:
+        print("[ERROR] Ticket category missing.")
+        return None
 
+    data = dict(zip(header, row))
     ticket = await guild.create_text_channel(
         name=f"ticket-{member.name}",
         category=category,
@@ -186,63 +180,51 @@ Upload your screenshot → <#{PAYOUT_CHANNEL_ID}>
 
 # ================= PAYMENT DM (ADDED) =================
 async def send_payment_dm(member, ticket_channel):
+    await asyncio.sleep(1)  # delay for Discord DM handshake
     try:
         embed = discord.Embed(
             title="🎉 Payment Confirmed!",
             description=f"Hey **{member.name}** 👋\nYour purchase was successful!",
             color=0x2ECC71
         )
-
-        if ticket_channel:
-            embed.add_field(
-                name="📁 Ticket",
-                value=f"{ticket_channel.mention}",
-                inline=False
-            )
-        else:
-            embed.add_field(
-                name="📁 Ticket",
-                value=f"Ticket not created (contact staff)",
-                inline=False
-            )
-
-        embed.add_field(
-            name="💳 Next Step",
-            value=f"Upload your payment screenshot in → <#{PAYOUT_CHANNEL_ID}>",
-            inline=False
-        )
-
+        embed.add_field(name="📁 Ticket", value=f"{ticket_channel.mention}", inline=False)
+        embed.add_field(name="💳 Next Step", value=f"Upload screenshot in <#{PAYOUT_CHANNEL_ID}>", inline=False)
         embed.set_footer(text="✨ Thanks for choosing FINEST — Performance is personal")
-
         await member.send(embed=embed)
-
     except Exception as e:
         print("[DM-ERROR] Payment DM:", e)
 
-# ================= ROLE LOGIC =================
+# ================= ROLE + ACCESS LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
-    if not row_index: return
+    if not row_index:
+        print(f"[PROCESS] User {member} not found in sheet.")
+        return None
 
     guild = member.guild
-    member_role = guild.get_role(MEMBER_ROLE_ID)
-    staff_role = guild.get_role(STAFF_ROLE_ID)
-
     data = dict(zip(header, row))
-    staff_value = data.get("Staff", "NONE").upper()
-
-    if member_role: await member.add_roles(member_role)
-    if STAFF_LOGIC == "B" and staff_value != "NONE" and staff_role:
-        await member.add_roles(staff_role)
-
-    update_role_assigned(row_index)
-    ticket = await create_ticket(member, header, row)
-
     status = data.get("Status", "").upper()
+
+    # assign paid role if exists
+    member_role = guild.get_role(MEMBER_ROLE_ID)
+    if status == "PAID" and member_role:
+        try:
+            await member.add_roles(member_role)
+        except:
+            print("[ROLE ERROR] Failed to assign paid role.")
+
+    # update sheet that role assigned
+    update_role_assigned(row_index)
+
+    # ticket for paid users only
     if status == "PAID":
-        await send_payment_dm(member, ticket)
-        
-    return ticket
+        ticket = await create_ticket(member, header, row)
+        if ticket:
+            await send_payment_dm(member, ticket)
+            return ticket
+
+    return None
+
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
     try:
@@ -257,11 +239,6 @@ async def send_join_dm(member):
                 "**Useful Areas**\n"
                 "🏷️ Main Chat — `#chat`\n"
                 "⚙ Support — Open ticket anytime\n\n"
-                "**Rules & Conduct**\n"
-                "• Respect everyone\n"
-                "• No spam or self-promo\n"
-                "• No scams or shady links\n"
-                "• Follow Discord TOS\n\n"
                 "If you ever need help — staff are one ticket away ❤️"
             ),
             color=0x2B2D31
@@ -276,7 +253,6 @@ async def send_join_dm(member):
 async def on_ready():
     print(f"✅ {bot.user} is online 🚀")
     update_status.start()
-    
     for guild in bot.guilds:
         try:
             await tree.sync(guild=discord.Object(id=GUILD_ID))
@@ -297,33 +273,22 @@ async def on_member_join(member):
 
     await send_join_dm(member)
 
-    # >>> 🔥 FREE PACK AUTO-UNLOCK LOGIC (FIXED) <<<
+    # free pack system untouched
     if str(member.id) in freeClaimUsers:
         data = freeClaimUsers[str(member.id)]
-
-        # 1) Tell backend to unlock browser polling
         try:
             async with aiohttp.ClientSession() as session:
-                await session.post("http://localhost:3000/freepack-unlock", json={
-                    "discord_id": str(member.id)
-                })
+                await session.post("http://localhost:3000/freepack-unlock", json={"discord_id": str(member.id)})
         except Exception as e:
             print("[FREEPACK ERROR] Backend unlock failed:", e)
-
-        # 2) DM the drive link
         try:
-            await member.send(
-                f"🎁 **Free Pack Unlocked!**\n"
-                f"Here is your download link:\n{data['drive']}"
-            )
+            await member.send(f"🎁 **Free Pack Unlocked!**\nHere is your download link:\n{data['drive']}")
         except:
             pass
-
-        # 3) Cleanup
         freeClaimUsers.pop(str(member.id), None)
 
-        # 4) Normal processing
-        await process_member(member)
+    # ⭐ ALWAYS PROCESS MEMBERS (PAID LOGIC)
+    await process_member(member)
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
@@ -342,15 +307,12 @@ async def lock_server(guild):
     global server_locked
     if server_locked: return
     server_locked = True
-
     everyone = guild.default_role
     for c in guild.text_channels:
         await c.set_permissions(everyone, send_messages=False)
-
     await asyncio.sleep(LOCK_DURATION)
     for c in guild.text_channels:
         await c.set_permissions(everyone, send_messages=True)
-
     server_locked = False
 
 # ================= SYNC COMMAND =================
@@ -358,30 +320,23 @@ async def lock_server(guild):
 async def sync(ctx):
     synced = await bot.tree.sync()
     await ctx.send(f"Globally synced {len(synced)} commands")
-    
-# ================= /ticket COMMAND =================
+
+# ================= SLASH COMMANDS =================
 @tree.command(name="ticket", description="Open a support ticket")
 async def ticket_cmd(interaction: Interaction):
     member = interaction.user
     guild = interaction.guild
-
     for c in guild.text_channels:
         if c.name == f"ticket-{member.name}":
             return await interaction.response.send_message(
-                "⚠️ You already have an open ticket.",
-                ephemeral=True
+                "⚠️ You already have an open ticket.", ephemeral=True
             )
-
     await interaction.response.send_modal(TicketModal(member))
 
-
-# ================= /price COMMAND =================
 @tree.command(name="price", description="View product / membership pricing")
 async def price_cmd(interaction: Interaction):
     await interaction.response.send_message(embed=membership_embed())
 
-
-# ================= /uptime COMMAND =================
 @tree.command(name="uptime", description="Show bot uptime")
 async def uptime_cmd(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
@@ -390,17 +345,12 @@ async def uptime_cmd(interaction: Interaction):
 @tree.command(name="refresh", description="Sync your purchase & unlock access")
 async def refresh_cmd(interaction: Interaction):
     await interaction.response.defer(ephemeral=True)
-
     member = interaction.user
-
-    ticket = await process_member(member)
-
+    await process_member(member)
     await interaction.followup.send(
-        "🔄 Sync complete! Check your DMs.\nIf ticket didn't create, use `/ticket`.",
-        ephemeral=True
+        "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
 
-# ================= /help COMMAND =================
 @tree.command(name="help", description="Show bot commands & usage")
 async def help_cmd(interaction: Interaction):
     embed = discord.Embed(
@@ -408,18 +358,15 @@ async def help_cmd(interaction: Interaction):
         description="Here are my available commands:",
         color=0x2B2D31
     )
-
     embed.add_field(name="/ticket", value="Open a support ticket", inline=False)
     embed.add_field(name="/price", value="View product pricing / membership", inline=False)
     embed.add_field(name="/uptime", value="Show bot uptime", inline=False)
     embed.add_field(name="/help", value="Show this help message", inline=False)
-    embed.add_field(name="/close", value="Close your current ticket (Staff Only)", inline=False)
-
+    embed.add_field(name="/close", value="Close a ticket (Staff Only)", inline=False)
     embed.set_footer(text="Finest Manager — Performance is personal")
     await interaction.response.send_message(embed=embed)
 
-
-# ================= /close COMMAND =================
+# ================= CLOSE COMMAND =================
 @tree.command(name="close", description="Close this ticket (staff only)")
 @app_commands.checks.has_role(STAFF_ROLE_ID)
 async def close_cmd(interaction: Interaction):
@@ -436,19 +383,12 @@ async def close_cmd(interaction: Interaction):
 
     archive = guild.get_channel(ARCHIVE_CATEGORY_ID)
     log_channel = guild.get_channel(LOG_CHANNEL_ID)
-    staff_role = guild.get_role(STAFF_ROLE_ID)
 
     if not archive:
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
 
-    # logging temporarily disabled
-    if log_channel:
-        pass
-
-    # move channel to archive
     await channel.edit(category=archive)
 
-    # adjust permissions
     for target in list(channel.overwrites):
         if isinstance(target, discord.Member):
             await channel.set_permissions(target, view_channel=False)
@@ -473,7 +413,6 @@ async def close_cmd(interaction: Interaction):
         except Exception as e:
             print("[DM-ERROR] Ticket close DM:", e)
 
-    # send log to staff channel
     if log_channel:
         await log_channel.send(
             f"📂 **Ticket archived** by {interaction.user.mention}\n"
@@ -488,43 +427,38 @@ async def close_cmd_error(interaction: Interaction, error):
     else:
         await interaction.response.send_message("⚠️ Something went wrong.", ephemeral=True)
 
+# ================= MESSAGE COMMANDS =================
 @bot.command()
 async def ping(ctx):
     await ctx.send("🏓 Pong! Bot online.")
 
 @bot.event
 async def on_message(message):
-    # without this, ALL !commands break
     await bot.process_commands(message)
-# ================= START =================
 
 # ================= AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
 async def on_voice_state_update(member, before, after):
-    ROLE_ID = 1214573354582024204  # your role ID
-
+    ROLE_ID = 1214573354582024204
     role = member.guild.get_role(ROLE_ID)
     if not role:
         print(f"[VOICE-ROLE] Role {ROLE_ID} not found!")
         return
 
-    # User joins ANY voice channel
     if before.channel is None and after.channel is not None:
         if role not in member.roles:
             try:
                 await member.add_roles(role, reason="Joined voice channel")
-                print(f"[VOICE-ROLE] Added voice role to {member.name}")
             except Exception as e:
                 print("[VOICE-ROLE ERROR] Add:", e)
 
-    # User leaves ALL channels
     if before.channel is not None and after.channel is None:
         if role in member.roles:
             try:
                 await member.remove_roles(role, reason="Left voice channel")
-                print(f"[VOICE-ROLE] Removed voice role from {member.name}")
             except Exception as e:
                 print("[VOICE-ROLE ERROR] Remove:", e)
 
+# ================= START =================
 keep_alive()
 bot.run(TOKEN)
