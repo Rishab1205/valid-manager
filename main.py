@@ -441,11 +441,10 @@ async def close_cmd(interaction: Interaction):
     if not archive:
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
         
-    if log_channel:
-    # old logging removed
-    pass  # keeps Python happy
+    # --- ARCHIVE & LOGGING ---
+if log_channel:
+    pass  # do nothing for now
 
-# (logging for archive happens later below)
 await channel.edit(category=archive)
 
 for target in list(channel.overwrites):
@@ -478,8 +477,6 @@ if log_channel:
         f"🧾 Channel: `{channel.name}`\n"
         f"👤 User: `{member.name if member else 'Unknown'}`"
     )
-
-
 
 @close_cmd.error
 async def close_cmd_error(interaction: Interaction, error):
