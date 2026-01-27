@@ -19,6 +19,7 @@ from discord.ext import commands, tasks
 from discord import app_commands, ui, Interaction, ButtonStyle
 from discord.ui import Modal, TextInput
 from discord.app_commands import MissingPermissions
+from openai import OpenAI
 
 import aiohttp
 
@@ -82,6 +83,16 @@ def membership_embed():
     embed.set_image(url="https://cdn.discordapp.com/attachments/1166295699290333194/1457812767846301779/Colorful_Abstract_Aesthetic_Linkedin_Banner.png")
     embed.set_footer(text="VALID GAMING • Official Membership")
     return embed
+
+# ================= AI CLIENT =================
+import os
+
+client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1"
+)
+
+AI_MODEL = "openai/gpt-4o-mini"  # best available free model
 
 # ================= STAFF CLAIM BUTTON =================
 class ClaimButton(ui.View):
@@ -350,6 +361,38 @@ async def refresh_cmd(interaction: Interaction):
     await interaction.followup.send(
         "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
+    
+@tree.command(name="askai", description="Ask the AI anything about packs, performance, or guidance.")
+async def askai_cmd(interaction: Interaction, prompt: str):
+    await interaction.response.defer()  # thinking time
+
+    try:
+        # Send request to free AI
+        resp = client.chat.completions.create(
+            model=AI_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an intelligent assistant for Finest Store. "
+                        "You must always call the user 'sir'. "
+                        "You must answer clearly and professionally. "
+                        "If the user asks about optimization, sensi, packs, pricing, "
+                        "or performance, you may recommend products but never spam."
+                    )
+                },
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        ai_text = resp.choices[0].message.content
+
+        await interaction.followup.send(ai_text)
+
+    except Exception as e:
+        await interaction.followup.send(
+            f"⚠️ AI service error sir: `{e}`\nPlease try again later."
+        )
 
 @tree.command(name="help", description="Show bot commands & usage")
 async def help_cmd(interaction: Interaction):
