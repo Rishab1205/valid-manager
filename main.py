@@ -193,11 +193,18 @@ async def send_payment_dm(member, ticket_channel):
             color=0x2ECC71
         )
 
-        embed.add_field(
-            name="📁 Ticket",
-            value=f"{ticket_channel.mention}",
-            inline=False
-        )
+        if ticket_channel:
+            embed.add_field(
+                name="📁 Ticket",
+                value=f"{ticket_channel.mention}",
+                inline=False
+            )
+        else:
+            embed.add_field(
+                name="📁 Ticket",
+                value=f"Ticket not created (contact staff)",
+                inline=False
+            )
 
         embed.add_field(
             name="💳 Next Step",
@@ -234,7 +241,8 @@ async def process_member(member):
     status = data.get("Status", "").upper()
     if status == "PAID":
         await send_payment_dm(member, ticket)
-
+        
+    return ticket
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
     try:
@@ -379,16 +387,18 @@ async def uptime_cmd(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
     await interaction.response.send_message(f"⏳ Bot Uptime: `{delta}`")
 
-@tree.command(name="refresh", description="Sync your purchase and get access")
+@tree.command(name="refresh", description="Sync your purchase & unlock access")
 async def refresh_cmd(interaction: Interaction):
     await interaction.response.defer(ephemeral=True)
 
     member = interaction.user
 
-    # run the same processing as join
-    await process_member(member)
+    ticket = await process_member(member)
 
-    await interaction.followup.send("🔄 Your purchase has been synced! Check your DMs.", ephemeral=True)
+    await interaction.followup.send(
+        "🔄 Sync complete! Check your DMs.\nIf ticket didn't create, use `/ticket`.",
+        ephemeral=True
+    )
 
 # ================= /help COMMAND =================
 @tree.command(name="help", description="Show bot commands & usage")
@@ -426,10 +436,15 @@ async def close_cmd(interaction: Interaction):
 
     archive = guild.get_channel(ARCHIVE_CATEGORY_ID)
     log_channel = guild.get_channel(LOG_CHANNEL_ID)
-
+    staff_role = guild.get_role(STAFF_ROLE_ID)
+    
     if not archive:
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
-
+        
+    if log_channel:
+    await log_channel.send(
+        f"📁 Ticket **closed & archived** by {interaction.user.mention} → {channel.mention}"
+    )
     await channel.edit(category=archive)
 
     for target in list(channel.overwrites):
@@ -480,5 +495,34 @@ async def on_message(message):
     # without this, ALL !commands break
     await bot.process_commands(message)
 # ================= START =================
+
+# ================= AUTO ROLE ON VOICE CHANNEL =================
+@bot.event
+async def on_voice_state_update(member, before, after):
+    ROLE_ID = 1214573354582024204  # your role ID
+
+    role = member.guild.get_role(ROLE_ID)
+    if not role:
+        print(f"[VOICE-ROLE] Role {ROLE_ID} not found!")
+        return
+
+    # User joins ANY voice channel
+    if before.channel is None and after.channel is not None:
+        if role not in member.roles:
+            try:
+                await member.add_roles(role, reason="Joined voice channel")
+                print(f"[VOICE-ROLE] Added voice role to {member.name}")
+            except Exception as e:
+                print("[VOICE-ROLE ERROR] Add:", e)
+
+    # User leaves ALL channels
+    if before.channel is not None and after.channel is None:
+        if role in member.roles:
+            try:
+                await member.remove_roles(role, reason="Left voice channel")
+                print(f"[VOICE-ROLE] Removed voice role from {member.name}")
+            except Exception as e:
+                print("[VOICE-ROLE ERROR] Remove:", e)
+
 keep_alive()
 bot.run(TOKEN)
