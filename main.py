@@ -289,31 +289,33 @@ async def on_member_join(member):
 
     await send_join_dm(member)
 
-   # >>> 🔥 FREE PACK AUTO-UNLOCK LOGIC (FIXED) <<<
-if str(member.id) in freeClaimUsers:
-    data = freeClaimUsers[str(member.id)]
+    # >>> 🔥 FREE PACK AUTO-UNLOCK LOGIC (FIXED) <<<
+    if str(member.id) in freeClaimUsers:
+        data = freeClaimUsers[str(member.id)]
 
-    # 1) Tell backend to unlock browser
-import aiohttp
-try:
-    async with aiohttp.ClientSession() as session:
-        await session.post("http://localhost:3000/freepack-unlock", json={
-            "discord_id": str(member.id)
-        })
-except Exception as e:
-    print("[FREEPACK ERROR] Backend unlock failed:", e)
+        # 1) Tell backend to unlock browser polling
+        try:
+            async with aiohttp.ClientSession() as session:
+                await session.post("http://localhost:3000/freepack-unlock", json={
+                    "discord_id": str(member.id)
+                })
+        except Exception as e:
+            print("[FREEPACK ERROR] Backend unlock failed:", e)
 
-    # 2) DM the drive link
-    try:
-        await member.send(f"🎁 **Free Pack Unlocked!**\nHere is your download link:\n{data['drive']}")
-    except:
-        pass
+        # 2) DM the drive link
+        try:
+            await member.send(
+                f"🎁 **Free Pack Unlocked!**\n"
+                f"Here is your download link:\n{data['drive']}"
+            )
+        except:
+            pass
 
-    # 3) Cleanup
-    freeClaimUsers.pop(str(member.id), None)
+        # 3) Cleanup
+        freeClaimUsers.pop(str(member.id), None)
 
-    await process_member(member)
-
+        # 4) Normal processing
+        await process_member(member)
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
