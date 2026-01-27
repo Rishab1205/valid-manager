@@ -437,46 +437,49 @@ async def close_cmd(interaction: Interaction):
     archive = guild.get_channel(ARCHIVE_CATEGORY_ID)
     log_channel = guild.get_channel(LOG_CHANNEL_ID)
     staff_role = guild.get_role(STAFF_ROLE_ID)
-    
+
     if not archive:
         return await interaction.response.send_message("❌ Archive category missing.", ephemeral=True)
-        
-    # --- ARCHIVE & LOGGING ---
-if log_channel:
-    pass  # do nothing for now
 
-await channel.edit(category=archive)
+    # logging temporarily disabled
+    if log_channel:
+        pass
 
-for target in list(channel.overwrites):
-    if isinstance(target, discord.Member):
-        await channel.set_permissions(target, view_channel=False)
-    if isinstance(target, discord.Role) and target.id == STAFF_ROLE_ID:
-        await channel.set_permissions(target, view_channel=True)
+    # move channel to archive
+    await channel.edit(category=archive)
 
-await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
+    # adjust permissions
+    for target in list(channel.overwrites):
+        if isinstance(target, discord.Member):
+            await channel.set_permissions(target, view_channel=False)
+        if isinstance(target, discord.Role) and target.id == STAFF_ROLE_ID:
+            await channel.set_permissions(target, view_channel=True)
 
-if member:
-    try:
-        dm = discord.Embed(
-            title="🎫 Ticket Closed",
-            description=(
-                "Your support ticket has been closed.\n\n"
-                "❤️ **Thank you for choosing Finest Store** ❤️\n"
-                "_Performance is personal._\n\n"
-                "If you ever need anything — open a new ticket!"
-            ),
-            color=0x2B2D31
+    await interaction.response.send_message("📁 Ticket archived.", ephemeral=True)
+
+    if member:
+        try:
+            dm = discord.Embed(
+                title="🎫 Ticket Closed",
+                description=(
+                    "Your support ticket has been closed.\n\n"
+                    "❤️ **Thank you for choosing Finest Store** ❤️\n"
+                    "_Performance is personal._\n\n"
+                    "If you ever need anything — open a new ticket!"
+                ),
+                color=0x2B2D31
+            )
+            await member.send(embed=dm)
+        except Exception as e:
+            print("[DM-ERROR] Ticket close DM:", e)
+
+    # send log to staff channel
+    if log_channel:
+        await log_channel.send(
+            f"📂 **Ticket archived** by {interaction.user.mention}\n"
+            f"🧾 Channel: `{channel.name}`\n"
+            f"👤 User: `{member.name if member else 'Unknown'}`"
         )
-        await member.send(embed=dm)
-    except Exception as e:
-        print("[DM-ERROR] Ticket close DM:", e)
-
-if log_channel:
-    await log_channel.send(
-        f"📂 **Ticket archived** by {interaction.user.mention}\n"
-        f"🧾 Channel: `{channel.name}`\n"
-        f"👤 User: `{member.name if member else 'Unknown'}`"
-    )
 
 @close_cmd.error
 async def close_cmd_error(interaction: Interaction, error):
