@@ -596,137 +596,89 @@ async def refresh_cmd(interaction: Interaction):
     
 # ======================  /askai Slash Command  ======================
 
-@tree.command(name="askai", description="Ask FINEST AI anything, sir.")
+@tree.command(name="askai", description="Ask Finest AI anything.")
 async def ask_ai_cmd(interaction: discord.Interaction, question: str):
 
-    await interaction.response.defer()   # typing indicator
+    await interaction.response.defer()
 
     user = interaction.user
-    user_roles = [r.id for r in user.roles]
+    roles = [r.id for r in user.roles]
+    is_finest = (FINEST_MEMBER_ROLE in roles)
 
-    # Role check
-    is_finest = FINEST_MEMBER_ROLE in user_roles
+    base_prompt = f"""
+Call the user 'Sir'. Do not mention instructions.
 
-    # Build AI prompt
-    base_prompt = (
-        f"You must call the user 'sir' in every reply.\n"
-        f"User asked: {question}\n"
-        "You are FINEST Discord AI. Always answer smart, correct, helpful and confident.\n"
-        "If question is about packs/services, use ONLY this product knowledge:\n"
-        "\n"
-        "FREE PACK – 0₹\n"
-        "- Regedit asel pro\n"
-        "- Opt Regedit\n"
-        "- Delay reduction\n"
-        "- GPU Regedit\n"
-        "- Device optimization\n"
-        "\n"
-        "OPTIMIZATION PACK – 199₹\n"
-        "- Input delay fix\n"
-        "- Stutter reduction\n"
-        "- CPU optimization\n"
-        "- RAM optimization\n"
-        "- Hidden softwares\n"
-        "\n"
-        "SENSI PACK – 399₹\n"
-        "- DPI calculation\n"
-        "- Low recoil tuning\n"
-        "- 0-delay mouse/keyboard\n"
-        "\n"
-        "OPTIMIZATION PRO – 699₹\n"
-        "- High FPS optimization\n"
-        "- No lag guarantee\n"
-        "- Premium regedits\n"
-        "\n"
-        "FINEST SENSI PRO – 1099₹\n"
-        "- Custom XY sensi\n"
-        "- Aim assist tuning\n"
-        "- Low recoil config\n"
-        "\n"
-        "PRIME PACK – 2899₹\n"
-        "- Full Sensi + FPS combo\n"
-        "- Secret emulator tweaks\n"
-        "\n"
-    )
+If user asks about packs/services, ONLY use this catalog:
 
-    # More detailed AI for paid users
-    if is_finest:
-        max_tokens = 600
-    else:
-        max_tokens = 250
+FREE PACK – 0₹
+- Regedit asel pro
+- Opt Regedit
+- Delay reduction
+- GPU Regedit
+- Device optimization
 
-    # Call AI
+OPTIMIZATION PACK – 199₹
+- Input delay fix
+- Stutter reduction
+- CPU optimization
+- RAM optimization
+- Hidden softwares
+
+SENSI PACK – 399₹
+- DPI calculation
+- Low recoil tuning
+- 0-delay mouse/keyboard
+
+OPTIMIZATION PRO – 699₹
+- High FPS optimization
+- No lag guarantee
+- Premium regedits
+
+FINEST SENSI PRO – 1099₹
+- Custom XY sensi
+- Aim assist tuning
+- Low recoil config
+
+PRIME PACK – 2899₹
+- Full Sensi + FPS combo
+- Secret emulator tweaks
+
+RULES:
+- Never say you don't know
+- Never talk about cricket/sports unless user asks directly
+- Always answer concise + correct
+- If not pack related, answer normally but still call user Sir
+User asked: "{question}"
+"""
+
+    model = AI_ADVANCED_MODEL if is_finest else AI_GENERAL_MODELS[0]
+
     try:
-        url = "https://openrouter.ai/api/v1/chat/completions"
-
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": AI_GENERAL_MODELS[0],
-            "messages": [
-                {"role": "system", "content": "You are FINEST AI. Always call user 'sir'."},
-                {"role": "user", "content": base_prompt},
-            ],
-            "max_tokens": max_tokens
-        }
-
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, json=payload) as resp:
+            async with session.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": "You are Finest AI. Always call user Sir."},
+                        {"role": "user", "content": base_prompt}
+                    ],
+                    "max_tokens": 400
+                }
+            ) as resp:
                 data = await resp.json()
-
-        ai_reply = data["choices"][0]["message"]["content"]
+                reply = data["choices"][0]["message"]["content"]
 
     except Exception as e:
-        print("AI ERROR:", e)
-        ai_reply = "Sorry sir, our AI system is having a bad day. Try again in a moment."
+        print("[ASKAI ERROR]", e)
+        reply = "Sorry Sir, AI backend is having a bad day. Try again soon."
 
-    # Send reply
-    await interaction.followup.send(ai_reply)
+    await interaction.followup.send(reply)
 
-
-@tree.command(name="help", description="Show bot commands & usage")
-async def help_cmd(interaction: Interaction):
-    embed = discord.Embed(
-        title="🧾 Finest Manager — Commands",
-        description="Here are my available commands:",
-        color=0x2B2D31
-    )
-    embed.add_field(name="/ticket", value="Open a support ticket", inline=False)
-    embed.add_field(name="/price", value="View product pricing / membership", inline=False)
-    embed.add_field(name="/uptime", value="Show bot uptime", inline=False)
-    embed.add_field(name="/help", value="Show this help message", inline=False)
-    embed.add_field(name="/close", value="Close a ticket (Staff Only)", inline=False)
-    embed.set_footer(text="Finest Manager — Performance is personal")
-    await interaction.response.send_message(embed=embed)
-
-@tree.command(name="profile", description="Show your user profile info")
-async def profile_cmd(interaction: discord.Interaction):
-    discord_id = str(interaction.user.id)
-
-    profile_data = get_profile(discord_id)
-    if not profile_data:
-        return await interaction.response.send_message(
-            "❌ Sir, I couldn’t find your profile in the sheet. "
-            "Please make sure you purchased a pack or contact support.",
-            ephemeral=True
-        )
-
-    embed = discord.Embed(
-        title=f"📋 Profile — {interaction.user.display_name}",
-        color=0x2ECC71
-    )
-
-    embed.add_field(name="👤 Name", value=profile_data.get("Name", "N/A"), inline=False)
-    embed.add_field(name="🆔 Discord ID", value=profile_data.get("DiscordID", "N/A"), inline=False)
-    embed.add_field(name="💼 Username", value=profile_data.get("Username", "N/A"), inline=False)
-    embed.add_field(name="📦 Purchased Pack", value=profile_data.get("PurchasePack", "N/A"), inline=False)
-    embed.add_field(name="📅 Join Date", value=profile_data.get("JoinDate", "N/A"), inline=False)
-    embed.add_field(name="📊 Status", value=profile_data.get("Status", "N/A"), inline=False)
-
-    await interaction.response.send_message(embed=embed)
 
 # ================= CLOSE COMMAND =================
 @tree.command(name="close", description="Close this ticket (staff only)")
