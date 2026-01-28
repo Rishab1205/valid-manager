@@ -590,72 +590,97 @@ async def refresh_cmd(interaction: Interaction):
         "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
     
-@tree.command(name="askai", description="Ask Finest AI anything (general or gaming)")
-async def askai_cmd(interaction: Interaction, *, query: str):
-    await interaction.response.defer()  # avoids timeout for long answers
-    reply = ai_reply(query)
-    reply = ai_reply(Prompt)
-    
-    await interaction.followup.send(reply)
-    
-    AI_CHANNELS = [1214601102100791346, 1457708857777197066]
-    FINEST_ROLE_ID = 1463993521827483751
+# ======================  /askai Slash Command  ======================
 
-    # Channel check
-    if channel.id not in AI_CHANNELS:
-        return await interaction.response.send_message(
-            "Sir, please use this command inside the AI channels.",
-            ephemeral=True
-        )
+@tree.command(name="askai", description="Ask FINEST AI anything, sir.")
+async def ask_ai_cmd(interaction: discord.Interaction, question: str):
 
-    await interaction.response.defer()
+    await interaction.response.defer()   # typing indicator
+
+    user = interaction.user
+    user_roles = [r.id for r in user.roles]
 
     # Role check
-    is_member = any(r.id == FINEST_ROLE_ID for r in user.roles)
+    is_finest = FINEST_MEMBER_ROLE in user_roles
 
-    # Prompt building
-    base_prompt = f"You must call the user 'Sir' in your replies. User asked: {query}"
+    # Build AI prompt
+    base_prompt = (
+        f"You must call the user 'sir' in every reply.\n"
+        f"User asked: {question}\n"
+        "You are FINEST Discord AI. Always answer smart, correct, helpful and confident.\n"
+        "If question is about packs/services, use ONLY this product knowledge:\n"
+        "\n"
+        "FREE PACK – 0₹\n"
+        "- Regedit asel pro\n"
+        "- Opt Regedit\n"
+        "- Delay reduction\n"
+        "- GPU Regedit\n"
+        "- Device optimization\n"
+        "\n"
+        "OPTIMIZATION PACK – 199₹\n"
+        "- Input delay fix\n"
+        "- Stutter reduction\n"
+        "- CPU optimization\n"
+        "- RAM optimization\n"
+        "- Hidden softwares\n"
+        "\n"
+        "SENSI PACK – 399₹\n"
+        "- DPI calculation\n"
+        "- Low recoil tuning\n"
+        "- 0-delay mouse/keyboard\n"
+        "\n"
+        "OPTIMIZATION PRO – 699₹\n"
+        "- High FPS optimization\n"
+        "- No lag guarantee\n"
+        "- Premium regedits\n"
+        "\n"
+        "FINEST SENSI PRO – 1099₹\n"
+        "- Custom XY sensi\n"
+        "- Aim assist tuning\n"
+        "- Low recoil config\n"
+        "\n"
+        "PRIME PACK – 2899₹\n"
+        "- Full Sensi + FPS combo\n"
+        "- Secret emulator tweaks\n"
+        "\n"
+    )
 
-    if is_member:
-        # Finest mode: long detailed
-        ai_prompt = base_prompt + "\nProvide a deep, detailed, long answer.\n"
-        max_tokens = 900
+    # More detailed AI for paid users
+    if is_finest:
+        max_tokens = 600
     else:
-        # Free mode: short with upsell
-        ai_prompt = base_prompt + "\nAnswer briefly in 3-5 lines.\n"
         max_tokens = 250
 
-    # AI Request
+    # Call AI
     try:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "model": AI_GENERAL_MODEL,
+            "messages": [
+                {"role": "system", "content": "You are FINEST AI. Always call user 'sir'."},
+                {"role": "user", "content": base_prompt},
+            ],
+            "max_tokens": max_tokens
+        }
+
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "gpt-4o-mini",
-                    "messages": [{"role": "user", "content": ai_prompt}],
-                    "max_tokens": max_tokens
-                }
-            ) as resp:
+            async with session.post(url, headers=headers, json=payload) as resp:
                 data = await resp.json()
 
-                if "choices" not in data:
-                    return await interaction.followup.send("Sir, AI service is offline, try again later.")
-
-                reply = data["choices"][0]["message"]["content"]
-
-                # Add upsell for free users
-                if not is_member:
-                    reply += "\n\n⚡ For full-length responses, deep tech answers & performance tweaks, upgrade to **Finest Membership**, Sir."
-
-                await interaction.followup.send(reply)
+        ai_reply = data["choices"][0]["message"]["content"]
 
     except Exception as e:
-        print("[AI ERROR]", e)
-        await interaction.followup.send("Sir, AI system hit a snag — try again shortly.")
+        print("AI ERROR:", e)
+        ai_reply = "Sorry sir, our AI system is having a bad day. Try again in a moment."
+
+    # Send reply
+    await interaction.followup.send(ai_reply)
 
 
 @tree.command(name="help", description="Show bot commands & usage")
