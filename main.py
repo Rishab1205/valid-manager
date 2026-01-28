@@ -51,7 +51,7 @@ def ai_reply(user_msg: str) -> str:
     headers = {
         "Authorization": f"Bearer {OPENROUTER_KEY}",
         "HTTP-Referer": "https://yourbot.com",  # anything valid
-        "X-Title": "VALIDAi Discord Bot"
+        "X-Title": "Finest AI Discord Bot"
     }
 
     r = requests.post(url, json=payload, headers=headers, timeout=30)
