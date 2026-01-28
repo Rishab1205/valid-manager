@@ -670,6 +670,9 @@ async def close_cmd_error(interaction: Interaction, error):
 async def ping(ctx):
     await ctx.send("🏓 Pong! Bot online.")
 
+ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
+AI_GENERAL_CHANNELS = ALLOWED_AI_CHANNELS  # Same thing
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -678,7 +681,9 @@ async def on_message(message):
     user_id = message.author.id
     content = message.content.lower()
 
+    # ===========================
     # CART COMMANDS
+    # ===========================
     if content.startswith("add to cart"):
         product = detect_product(content)
         if not product:
@@ -705,7 +710,9 @@ async def on_message(message):
         user_carts[user_id] = []
         return await message.channel.send("♻️ Cart cleared, sir.")
 
+    # ===========================
     # PRICE CHECK
+    # ===========================
     product = detect_product(content)
     if product:
         p = PRODUCTS[product]
@@ -716,44 +723,41 @@ async def on_message(message):
             f"To buy, type: `add to cart {product}`"
         )
 
-    # FALLBACK → AI
-    await bot.process_commands(message)
-
-ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
-
-@bot.event
-async def on_message(msg):
-    await bot.process_commands(msg)
-
-    if msg.author.bot:
-        return
-
-    if msg.channel.id in ALLOWED_AI_CHANNELS:
-        reply = ai_reply(msg.content)
-        await msg.channel.send(reply)
-
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    await bot.process_commands(message)
-
-    # AI Auto Chat Channels Only
-    if message.channel.id in AI_GENERAL_CHANNELS:
+    # ===========================
+    # AI CHAT RESPONSE (CHANNEL-TYPE)
+    # ===========================
+    if message.channel.id in ALLOWED_AI_CHANNELS:
         user = message.author
-        content = message.content.strip()
+        raw_msg = message.content.strip()
 
-        # Premium or normal model
-        model = AI_ADVANCED_MODEL if any(r.id == FINEST_MEMBER_ROLE for r in user.roles) else AI_GENERAL_MODELS[0]
+        # Choose model based on role
+        model = (
+            AI_ADVANCED_MODEL
+            if any(r.id == FINEST_MEMBER_ROLE for r in user.roles)
+            else AI_GENERAL_MODEL
+        )
 
-        reply = await ai_query(content, model=model)
+        try:
+            reply = await ai_query(raw_msg, model=model)
+            await message.channel.send(f"**Sir**, {reply}")
+        except Exception as e:
+            print("[AI-ERROR]", e)
+            await message.channel.send("⚠️ Sorry sir, AI service is having a bad day. Try again shortly.")
 
-        await message.channel.send(f"**Sir**, {reply}")
+        # ===== AI LOG (INSIDE FUNCTION, NOT TOP-LEVEL) =====
+        try:
+            log_channel = bot.get_channel(FINEST_LOG_CHANNEL)
+            if log_channel:
+                await log_channel.send(
+                    f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {raw_msg}"
+                )
+        except Exception as e:
+            print("[LOG-ERROR]", e)
 
-log_channel = bot.get_channel(FINEST_LOG_CHANNEL)
-if log_channel:
-    await log_channel.send(f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {content}")
+    # ===========================
+    # FINAL FALLBACK → allow other commands
+    # ===========================
+    await bot.process_commands(message)
 
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
