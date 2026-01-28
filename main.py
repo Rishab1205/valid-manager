@@ -108,7 +108,7 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
-start_time = datetime.datetime.utcnow()
+start_time = datetime.utcnow()
 
 # ================= RAID DETECTION =================
 RAID_JOIN_LIMIT = 5
