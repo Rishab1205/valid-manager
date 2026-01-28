@@ -392,10 +392,11 @@ async def refresh_cmd(interaction: Interaction):
         "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
     
-@tree.command(name="askai", description="Ask AI anything")
-async def askai_cmd(interaction: discord.Interaction, query: str):
-    user = interaction.user
-    channel = interaction.channel
+@tree.command(name="askai", description="Ask AI anything sir.")
+async def askai_cmd(interaction: Interaction, *, question: str):
+    await interaction.response.defer()
+    reply = await ask_ai(question)
+    await interaction.followup.send(reply)
 
     AI_CHANNELS = [1214601102100791346, 1457708857777197066]
     FINEST_ROLE_ID = 1463993521827483751
@@ -540,9 +541,21 @@ async def ping(ctx):
 
 @bot.event
 async def on_message(message):
+    if message.author.bot:
+        return
+    
+    # allow ! commands to work
     await bot.process_commands(message)
 
-# ================= AUTO ROLE ON VOICE CHANNEL =================
+    # only reply in allowed channels
+    if message.channel.id not in ALLOWED_AI_CHANNELS:
+        return
+
+    # generate AI reply
+    reply = await ask_ai(message.content)
+    await message.channel.send(reply)
+
+#================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
 async def on_voice_state_update(member, before, after):
     ROLE_ID = 1214573354582024204
