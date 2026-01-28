@@ -65,3 +65,42 @@ def update_ticket_opened(row_number: int):
         valueInputOption="USER_ENTERED",
         body={"values": [["TRUE"]]}
     ).execute()
+
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+
+# ⚙️ AUTH & SHEET SERVICE
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+creds = Credentials.from_service_account_file(
+    "credentials.json",
+    scopes=SCOPES
+)
+
+service = build("sheets", "v4", credentials=creds)
+
+def get_profile(discord_id: str):
+    """
+    Fetches a profile row by Discord ID from the Profiles tab.
+    Returns: dict or None
+    """
+    try:
+        sheet = service.spreadsheets()
+        result = sheet.values().get(
+            spreadsheetId=PROFILE_SHEET_ID,
+            range=f"{PROFILE_TAB_NAME}!A:F"
+        ).execute()
+
+        rows = result.get("values", [])
+        if not rows:
+            return None
+
+        headers = rows[0]
+        for row in rows[1:]:
+            row_data = dict(zip(headers, row))
+            if row_data.get("DiscordID") == discord_id:
+                return row_data
+
+        return None
+    except Exception as e:
+        print("[SHEET-PROFILE-ERROR]", e)
+        return None
