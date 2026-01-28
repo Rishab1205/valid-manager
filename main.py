@@ -441,14 +441,13 @@ async def send_payment_dm(member, ticket_channel):
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
     if not row_index:
-        print(f"[PROCESS] User {member} not found in sheet.")
         return None
 
     guild = member.guild
     data = dict(zip(header, row))
     status = data.get("Status", "").upper()
 
-    # assign paid role if exists
+    # Assign role if paid
     member_role = guild.get_role(MEMBER_ROLE_ID)
     if status == "PAID" and member_role:
         try:
@@ -456,15 +455,15 @@ async def process_member(member):
         except:
             print("[ROLE ERROR] Failed to assign paid role.")
 
-    # update sheet that role assigned
+    # Update sheet
     update_role_assigned(row_index)
 
-    # ticket for paid users only
+    # Create ticket + DM for paid
     if status == "PAID":
         ticket = await create_ticket(member, header, row)
         if ticket:
             await send_payment_dm(member, ticket)
-            return ticket
+        return ticket
 
     return None
 
@@ -588,11 +587,32 @@ async def uptime_cmd(interaction: Interaction):
 @tree.command(name="refresh", description="Sync your purchase & unlock access")
 async def refresh_cmd(interaction: Interaction):
     await interaction.response.defer(ephemeral=True)
+
     member = interaction.user
-    await process_member(member)
-    await interaction.followup.send(
-        "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
-    )
+    ticket = await process_member(member)
+
+    if ticket:
+        await interaction.followup.send("🔄 Synced successfully sir! Ticket + DM sent.", ephemeral=True)
+    else:
+        await interaction.followup.send("⚠️ No paid purchases found sir.", ephemeral=True)
+
+from sheet import get_profile
+
+@tree.command(name="profile", description="Show your purchase history")
+async def profile_cmd(interaction: Interaction):
+    await interaction.response.defer(ephemeral=True)
+
+    discord_id = str(interaction.user.id)
+    data = get_profile(discord_id)
+
+    if not data:
+        return await interaction.followup.send("Sir, you have no recorded purchases yet.")
+
+    msg = "**📜 Your Finest Purchase History:**\n\n"
+    for item in data:
+        msg += f"• **{item['product']}** — {item['status']} | `{item['timestamp']}`\n"
+
+    await interaction.followup.send(msg)
     
 # ======================  /askai Slash Command  ======================
 
@@ -740,6 +760,40 @@ async def close_cmd_error(interaction: Interaction, error):
         await interaction.response.send_message("❌ Staff only.", ephemeral=True)
     else:
         await interaction.response.send_message("⚠️ Something went wrong.", ephemeral=True)
+        
+import random
+
+SUBS = [
+    "IndianGaming",
+    "FreeFireBattlegrounds",
+    "ValorantMemes",
+    "memes",
+    "dankmeme"
+]
+
+MEME_CHANNEL = 1466027691533926557
+
+@tree.command(name="meme", description="Drop a fresh meme")
+async def meme_cmd(interaction: Interaction):
+    await interaction.response.defer()
+
+    sub = random.choice(SUBS)
+    url = f"https://meme-api.com/gimme/{sub}"
+
+    try:
+        r = requests.get(url).json()
+        meme_url = r["url"]
+        title = r["title"]
+
+        channel = bot.get_channel(MEME_CHANNEL)
+        if channel:
+            await channel.send(f"**{title}**\n{meme_url}")
+            await interaction.followup.send("Meme delivered sir 😎", ephemeral=True)
+        else:
+            await interaction.followup.send("Meme channel missing sir.", ephemeral=True)
+
+    except:
+        await interaction.followup.send("API down sir, no memes today 💀", ephemeral=True)
 
 # ================= MESSAGE COMMANDS =================
 @bot.command()
