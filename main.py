@@ -702,6 +702,32 @@ async def help_cmd(interaction: Interaction):
     embed.set_footer(text="Finest Manager — Performance is personal")
     await interaction.response.send_message(embed=embed)
 
+@tree.command(name="profile", description="Show your user profile info")
+async def profile_cmd(interaction: discord.Interaction):
+    discord_id = str(interaction.user.id)
+
+    profile_data = get_profile(discord_id)
+    if not profile_data:
+        return await interaction.response.send_message(
+            "❌ Sir, I couldn’t find your profile in the sheet. "
+            "Please make sure you purchased a pack or contact support.",
+            ephemeral=True
+        )
+
+    embed = discord.Embed(
+        title=f"📋 Profile — {interaction.user.display_name}",
+        color=0x2ECC71
+    )
+
+    embed.add_field(name="👤 Name", value=profile_data.get("Name", "N/A"), inline=False)
+    embed.add_field(name="🆔 Discord ID", value=profile_data.get("DiscordID", "N/A"), inline=False)
+    embed.add_field(name="💼 Username", value=profile_data.get("Username", "N/A"), inline=False)
+    embed.add_field(name="📦 Purchased Pack", value=profile_data.get("PurchasePack", "N/A"), inline=False)
+    embed.add_field(name="📅 Join Date", value=profile_data.get("JoinDate", "N/A"), inline=False)
+    embed.add_field(name="📊 Status", value=profile_data.get("Status", "N/A"), inline=False)
+
+    await interaction.response.send_message(embed=embed)
+
 # ================= CLOSE COMMAND =================
 @tree.command(name="close", description="Close this ticket (staff only)")
 @app_commands.checks.has_role(STAFF_ROLE_ID)
