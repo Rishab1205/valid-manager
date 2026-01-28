@@ -25,6 +25,30 @@ import aiohttp
 
 from sheet import find_user_row, update_role_assigned
 
+# ================= PRODUCT DATA =================
+PRODUCTS = {
+    "free pack": {"price": 0, "desc": "Regedit ASL Pro, Delay Reduction, GPU Regedit, Device tweaks"},
+    "optimization pack": {"price": 199, "desc": "Input Delay Fix, CPU/RAM Optimization, Softwares for Max FPS"},
+    "sensi pack": {"price": 399, "desc": "Mouse/DPI Calc, Low Recoil Tuning, Mouse 0 Delay, Keyboard 0 Delay"},
+    "optimization pro": {"price": 699, "desc": "High FPS Optimization, No Lag Guarantee, Hidden Software"},
+    "finest sensi pro": {"price": 1099, "desc": "Custom Sensitivity, Input Optimization, Recoil Config"},
+    "prime pack": {"price": 2899, "desc": "FPS + Sensi Combo, Advanced Tweaks, Secret Emulator, Aim Boost"},
+    "freefire id": {"price": 1000, "desc": "Freefire ID selling (pricing starts at 1000)"},
+    "discord server basic": {"price": 399, "desc": "Basic server setup"},
+    "discord server premium": {"price": 799, "desc": "Premium server with configs"},
+    "finest server premium": {"price": 1099, "desc": "Full Finest style server with configs"}
+}
+
+# ================= CART STORAGE =================
+user_carts = {}
+
+def detect_product(text: str):
+    text = text.lower()
+    for name in PRODUCTS:
+        if name in text:
+            return name
+    return None
+
 TOKEN = os.getenv("TOKEN")
 GUILD_ID = int(os.getenv("DISCORD_GUILD_ID"))
 MEMBER_ROLE_ID = int(os.getenv("DISCORD_MEMBER_ROLE_ID"))
@@ -543,17 +567,51 @@ async def ping(ctx):
 async def on_message(message):
     if message.author.bot:
         return
-    
-    # allow ! commands to work
+
+    user_id = message.author.id
+    content = message.content.lower()
+
+    # CART COMMANDS
+    if content.startswith("add to cart"):
+        product = detect_product(content)
+        if not product:
+            return await message.channel.send("❌ Sir, product not found.")
+        user_carts.setdefault(user_id, []).append(product)
+        return await message.channel.send(f"🛒 Added **{product}** to your cart, sir.")
+
+    if content.startswith("remove from cart"):
+        product = detect_product(content)
+        if not product or product not in user_carts.get(user_id, []):
+            return await message.channel.send("❌ Sir, product not in cart.")
+        user_carts[user_id].remove(product)
+        return await message.channel.send(f"🗑 Removed **{product}** from your cart, sir.")
+
+    if content == "cart":
+        cart = user_carts.get(user_id, [])
+        if not cart:
+            return await message.channel.send("🛒 Your cart is empty, sir.")
+        total = sum(PRODUCTS[p]["price"] for p in cart)
+        items = "\n".join(f"• {p} — ₹{PRODUCTS[p]['price']}" for p in cart)
+        return await message.channel.send(f"🛒 **Your Cart:**\n{items}\n\n💰 **Total: ₹{total}**")
+
+    if content == "clearcart":
+        user_carts[user_id] = []
+        return await message.channel.send("♻️ Cart cleared, sir.")
+
+    # PRICE CHECK
+    product = detect_product(content)
+    if product:
+        p = PRODUCTS[product]
+        return await message.channel.send(
+            f"📦 **{product.title()}**\n"
+            f"💰 Price: **₹{p['price']}**\n"
+            f"🧾 Description: {p['desc']}\n\n"
+            f"To buy, type: `add to cart {product}`"
+        )
+
+    # FALLBACK → AI
     await bot.process_commands(message)
 
-    # only reply in allowed channels
-    if message.channel.id not in ALLOWED_AI_CHANNELS:
-        return
-
-    # generate AI reply
-    reply = await ask_ai(message.content)
-    await message.channel.send(reply)
 
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
