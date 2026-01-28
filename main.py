@@ -758,6 +758,109 @@ async def on_message(message):
     # FINAL FALLBACK → allow other commands
     # ===========================
     await bot.process_commands(message)
+# ========== AI CONFIG (Loads from environment) ==========
+import os
+import json
+
+AI_GENERAL_MODELS = json.loads(os.getenv("AI_GENERAL_MODELS", '["gpt-4o-mini"]'))
+AI_ADVANCED_MODEL = os.getenv("AI_ADVANCED_MODEL", "gpt-4o-mini")
+
+AI_GENERAL_CHANNELS = json.loads(os.getenv("AI_GENERAL_CHANNELS", "[]"))
+FINEST_MEMBER_ROLE = int(os.getenv("FINEST_MEMBER_ROLE", "0"))
+FINEST_LOG_CHANNEL = int(os.getenv("FINEST_LOG_CHANNEL", "0"))
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+# ========== AI REQUEST FUNCTION ==========
+async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
+    import aiohttp
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 500
+                }
+            ) as resp:
+                data = await resp.json()
+                return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"⚠️ Sorry sir, AI is offline. Error: {e}"
+
+# ========== AI AUTO-REPLY (MESSAGE EVENT) ==========
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    await bot.process_commands(message)
+# ========== AI CONFIG (Loads from environment) ==========
+import os
+import json
+
+AI_GENERAL_MODELS = json.loads(os.getenv("AI_GENERAL_MODELS", '["gpt-4o-mini"]'))
+AI_ADVANCED_MODEL = os.getenv("AI_ADVANCED_MODEL", "gpt-4o-mini")
+
+AI_GENERAL_CHANNELS = json.loads(os.getenv("AI_GENERAL_CHANNELS", "[]"))
+FINEST_MEMBER_ROLE = int(os.getenv("FINEST_MEMBER_ROLE", "0"))
+FINEST_LOG_CHANNEL = int(os.getenv("FINEST_LOG_CHANNEL", "0"))
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+# ========== AI REQUEST FUNCTION ==========
+async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
+    import aiohttp
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 500
+                }
+            ) as resp:
+                data = await resp.json()
+                return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"⚠️ Sorry sir, AI is offline. Error: {e}"
+
+# ========== AI AUTO-REPLY (MESSAGE EVENT) ==========
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    await bot.process_commands(message)
+
+    # Auto AI reply only inside allowed channels
+    if message.channel.id in AI_GENERAL_CHANNELS:
+        user = message.author
+        text = message.content.strip()
+
+        # Premium model (Finest member)
+        if any(r.id == FINEST_MEMBER_ROLE for r in user.roles):
+            model = AI_ADVANCED_MODEL
+        else:
+            model = AI_GENERAL_MODELS[0]
+
+        reply = await ai_query(text, model=model)
+        await message.channel.send(f"**Sir**, {reply}")
+
+        # Logging
+        log_ch = bot.get_channel(FINEST_LOG_CHANNEL)
+        if log_ch:
+            await log_ch.send(f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {text}")
 
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
