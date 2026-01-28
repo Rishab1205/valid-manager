@@ -457,10 +457,12 @@ async def refresh_cmd(interaction: Interaction):
         "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
     
-@tree.command(name="askai", description="Ask AI anything sir.")
-async def askai_cmd(interaction: Interaction, *, question: str):
-    await interaction.response.defer()
-    reply = await ask_ai(question)
+@tree.command(name="askai", description="Ask VALIDAi anything (general or gaming)")
+async def askai_cmd(interaction: Interaction, *, query: str):
+    await interaction.response.defer()  # avoids timeout for long answers
+
+    reply = ai_reply(query)
+
     await interaction.followup.send(reply)
 
     AI_CHANNELS = [1214601102100791346, 1457708857777197066]
@@ -522,13 +524,6 @@ async def askai_cmd(interaction: Interaction, *, question: str):
         print("[AI ERROR]", e)
         await interaction.followup.send("Sir, AI system hit a snag — try again shortly.")
 
-@tree.command(name="askai", description="Ask VALIDAi anything (general or gaming)")
-async def askai_cmd(interaction: Interaction, *, query: str):
-    await interaction.response.defer()  # avoids timeout for long answers
-
-    reply = ai_reply(query)
-
-    await interaction.followup.send(reply)
 
 @tree.command(name="help", description="Show bot commands & usage")
 async def help_cmd(interaction: Interaction):
