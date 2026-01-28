@@ -94,6 +94,36 @@ client = OpenAI(
 
 AI_MODEL = "openai/gpt-4o-mini"  # best available free model
 
+# ================= AI CHAT CONFIG =================
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+ALLOWED_AI_CHANNELS = {
+    1214601102100791346,   # channel-1
+    1457708857777197066    # channel-2
+}
+
+async def ask_ai(prompt: str) -> str:
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are an assistant. Call the user 'sir'. Keep replies helpful and clear."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload, headers=headers) as resp:
+            data = await resp.json()
+            try:
+                return data["choices"][0]["message"]["content"]
+            except:
+                return "Sorry sir, AI service is not responding."
+
 # ================= STAFF CLAIM BUTTON =================
 class ClaimButton(ui.View):
     def __init__(self, member):
@@ -362,37 +392,70 @@ async def refresh_cmd(interaction: Interaction):
         "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
     
-@tree.command(name="askai", description="Ask the AI anything about packs, performance, or guidance.")
-async def askai_cmd(interaction: Interaction, prompt: str):
-    await interaction.response.defer()  # thinking time
+@tree.command(name="askai", description="Ask AI anything")
+async def askai_cmd(interaction: discord.Interaction, query: str):
+    user = interaction.user
+    channel = interaction.channel
 
-    try:
-        # Send request to free AI
-        resp = client.chat.completions.create(
-            model=AI_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are an intelligent assistant for Finest Store. "
-                        "You must always call the user 'sir'. "
-                        "You must answer clearly and professionally. "
-                        "If the user asks about optimization, sensi, packs, pricing, "
-                        "or performance, you may recommend products but never spam."
-                    )
-                },
-                {"role": "user", "content": prompt}
-            ]
+    AI_CHANNELS = [1214601102100791346, 1457708857777197066]
+    FINEST_ROLE_ID = 1463993521827483751
+
+    # Channel check
+    if channel.id not in AI_CHANNELS:
+        return await interaction.response.send_message(
+            "Sir, please use this command inside the AI channels.",
+            ephemeral=True
         )
 
-        ai_text = resp.choices[0].message.content
+    await interaction.response.defer()
 
-        await interaction.followup.send(ai_text)
+    # Role check
+    is_member = any(r.id == FINEST_ROLE_ID for r in user.roles)
+
+    # Prompt building
+    base_prompt = f"You must call the user 'Sir' in your replies. User asked: {query}"
+
+    if is_member:
+        # Finest mode: long detailed
+        ai_prompt = base_prompt + "\nProvide a deep, detailed, long answer.\n"
+        max_tokens = 900
+    else:
+        # Free mode: short with upsell
+        ai_prompt = base_prompt + "\nAnswer briefly in 3-5 lines.\n"
+        max_tokens = 250
+
+    # AI Request
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": ai_prompt}],
+                    "max_tokens": max_tokens
+                }
+            ) as resp:
+                data = await resp.json()
+
+                if "choices" not in data:
+                    return await interaction.followup.send("Sir, AI service is offline, try again later.")
+
+                reply = data["choices"][0]["message"]["content"]
+
+                # Add upsell for free users
+                if not is_member:
+                    reply += "\n\n⚡ For full-length responses, deep tech answers & performance tweaks, upgrade to **Finest Membership**, Sir."
+
+                await interaction.followup.send(reply)
 
     except Exception as e:
-        await interaction.followup.send(
-            f"⚠️ AI service error sir: `{e}`\nPlease try again later."
-        )
+        print("[AI ERROR]", e)
+        await interaction.followup.send("Sir, AI system hit a snag — try again shortly.")
+
 
 @tree.command(name="help", description="Show bot commands & usage")
 async def help_cmd(interaction: Interaction):
