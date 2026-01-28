@@ -25,6 +25,8 @@ from openai import OpenAI
 import aiohttp
 import requests
 from datetime import datetime
+import requests
+from discord.ext.commands import has_role
 
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")  # keep env clean
 
@@ -101,6 +103,12 @@ LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID"))
 STAFF_LOGIC = os.getenv("STAFF_LOGIC", "B")
 PAYMODE = "B"
 STATUS_FIELD = "Status"
+
+# ================= AI CONFIG =================
+AI_GENERAL_CHANNELS = [1214601102100791346, 1457708857777197066]
+FINEST_MEMBER_ROLE = 1463993521827483751
+STAFF_ROLE = 1464249885669851360
+FINEST_LOG_CHANNEL = 1465979396484632712
 
 intents = discord.Intents.default()
 intents.members = True
@@ -188,6 +196,26 @@ async def ask_ai(prompt: str) -> str:
                 return data["choices"][0]["message"]["content"]
             except:
                 return "Sorry sir, AI service is not responding."
+                
+# ================= AI CONFIG =================
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+AI_GENERAL_MODELS = [
+    "gpt-4o-mini",
+    "gpt-4o-mini",
+    "gpt-4o-mini"  # redundancy improves stability
+]
+
+AI_ADVANCED_MODEL = "gpt-4o"  # premium model for members
+
+AI_GENERAL_CHANNELS = [
+    1214601102100791346,  # channel 1
+    1457708857777197066   # channel 2
+]
+
+FINEST_MEMBER_ROLE = 1463993521827483751
+STAFF_ROLE = 1464249885669851360
+FINEST_LOG_CHANNEL = 1465979396484632712
 
 # ================= STAFF CLAIM BUTTON =================
 class ClaimButton(ui.View):
@@ -208,6 +236,42 @@ class ClaimButton(ui.View):
 
         log = bot.get_channel(LOG_CHANNEL_ID)
         if log: await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
+
+
+async def ai_query(prompt, model="gpt-4o-mini"):
+    try:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are FINEST Discord AI Assistant. "
+                        "Call the user 'Sir'. "
+                        "Be respectful, short, helpful, modern, accurate, up-to-date and concise. "
+                        "Answer ANY question even if not related to packs. "
+                        "If asked about packs, answer with business context. "
+                        "Never say you lack knowledge, always answer."
+                    )
+                },
+                {"role": "user", "content": prompt}
+            ]
+        }
+
+        response = requests.post(url, headers=headers, json=data, timeout=25)
+        result = response.json()
+
+        return result["choices"][0]["message"]["content"]
+    except Exception as e:
+        print("[AI ERROR]", e)
+        return "Sorry sir, AI service is busy right now. Try again in a moment."
 
 # ================= TICKET MODAL =================
 class TicketModal(Modal, title="Open Support Ticket"):
@@ -457,7 +521,7 @@ async def refresh_cmd(interaction: Interaction):
         "🔄 Sync complete! Check your DMs.\nIf no ticket, use `/ticket`.", ephemeral=True
     )
     
-@tree.command(name="askai", description="Ask VALIDAi anything (general or gaming)")
+@tree.command(name="askai", description="Ask Finest AI anything (general or gaming)")
 async def askai_cmd(interaction: Interaction, *, query: str):
     await interaction.response.defer()  # avoids timeout for long answers
     reply = ai_reply(query)
@@ -667,6 +731,29 @@ async def on_message(msg):
     if msg.channel.id in ALLOWED_AI_CHANNELS:
         reply = ai_reply(msg.content)
         await msg.channel.send(reply)
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    await bot.process_commands(message)
+
+    # AI Auto Chat Channels Only
+    if message.channel.id in AI_GENERAL_CHANNELS:
+        user = message.author
+        content = message.content.strip()
+
+        # Premium or normal model
+        model = AI_ADVANCED_MODEL if any(r.id == FINEST_MEMBER_ROLE for r in user.roles) else AI_GENERAL_MODELS[0]
+
+        reply = await ai_query(content, model=model)
+
+        await message.channel.send(f"**Sir**, {reply}")
+
+log_channel = bot.get_channel(FINEST_LOG_CHANNEL)
+if log_channel:
+    await log_channel.send(f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {content}")
 
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
