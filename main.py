@@ -457,6 +457,8 @@ async def process_member(member):
 
     # Update sheet
     update_role_assigned(row_index)
+    from sheet import update_profile_sheet
+    await update_profile_sheet(member, row)
 
     # Create ticket + DM for paid
     if status in ["paid", "payment received", "completed", "success"]:
@@ -598,22 +600,33 @@ async def refresh_cmd(interaction: Interaction):
 
 from sheet import get_profile
 
-@tree.command(name="profile", description="Show your purchase history")
-async def profile_cmd(interaction: Interaction):
-    await interaction.response.defer(ephemeral=True)
+@tree.command(name="profile", description="View your Finest profile")
+async def profile_cmd(interaction: discord.Interaction):
+    sheet = client.open_by_key(SHEET_ID)
+    tab = sheet.worksheet("Profiles")
 
     discord_id = str(interaction.user.id)
-    data = get_profile(discord_id)
+    ids = tab.col_values(1)
 
-    if not data:
-        return await interaction.followup.send("Sir, you have no recorded purchases yet.")
+    if discord_id not in ids:
+        return await interaction.response.send_message("Sir, you have no profile yet. Buy something first 😊", ephemeral=True)
 
-    msg = "**📜 Your Finest Purchase History:**\n\n"
-    for item in data:
-        msg += f"• **{item['product']}** — {item['status']} | `{item['timestamp']}`\n"
+    idx = ids.index(discord_id) + 1
+    values = tab.row_values(idx)
 
-    await interaction.followup.send(msg)
-    
+    embed = discord.Embed(
+        title=f"🎫 Finest Profile",
+        color=0x2ECC71
+    )
+    embed.add_field(name="Name", value=values[1], inline=False)
+    embed.add_field(name="Username", value=values[2], inline=False)
+    embed.add_field(name="Email", value=values[3], inline=False)
+    embed.add_field(name="Last Purchase", value=values[4], inline=False)
+    embed.add_field(name="Join Date", value=values[5], inline=False)
+    embed.add_field(name="Status", value=values[6], inline=False)
+
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+   
 # ======================  /askai Slash Command  ======================
 
 @tree.command(name="askai", description="Ask Finest AI anything.")
