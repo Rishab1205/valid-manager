@@ -105,3 +105,39 @@ def get_profile(discord_id: str):
     except Exception as e:
         print("[SHEET-PROFILE-ERROR]", e)
         return None
+# ============= PROFILE FUNCTIONS =============
+
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+
+PROFILE_TAB = "Sheet1"  # confirmed by user
+
+def get_profile(discord_id: str):
+    try:
+        creds = Credentials.from_service_account_info(SERVICE_JSON, scopes=SCOPES)
+        service = build("sheets", "v4", credentials=creds)
+        sheet = service.spreadsheets()
+
+        result = sheet.values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"{PROFILE_TAB}!A2:Z999"
+        ).execute()
+
+        rows = result.get('values', [])
+        purchases = []
+
+        for row in rows:
+            row_map = dict(zip(HEADERS, row))
+            if row_map.get("Discord ID") == discord_id:
+                purchases.append({
+                    "product": row_map.get("Product", "Unknown"),
+                    "status": row_map.get("Status", "Unknown"),
+                    "payment_id": row_map.get("Payment ID", "N/A"),
+                    "timestamp": row_map.get("Timestamp", "N/A")
+                })
+
+        return purchases
+
+    except Exception as e:
+        print("[PROFILE ERROR]", e)
+        return None
