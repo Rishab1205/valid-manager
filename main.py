@@ -41,7 +41,7 @@ def ai_reply(user_msg: str) -> str:
     )
 
     payload = {
-        "model": "qwen2.5-72b-instruct",
+        "model": "openai/gpt-4o-mini",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_msg}
