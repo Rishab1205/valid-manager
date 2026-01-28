@@ -445,7 +445,7 @@ async def process_member(member):
 
     guild = member.guild
     data = dict(zip(header, row))
-    status = data.get("Status", "").upper()
+    status = data.get("Status", "").strip().lower()
 
     # Assign role if paid
     member_role = guild.get_role(MEMBER_ROLE_ID)
@@ -459,7 +459,7 @@ async def process_member(member):
     update_role_assigned(row_index)
 
     # Create ticket + DM for paid
-    if status == "PAID":
+    if status in ["paid", "payment received", "completed", "success"]:
         ticket = await create_ticket(member, header, row)
         if ticket:
             await send_payment_dm(member, ticket)
