@@ -238,7 +238,7 @@ class ClaimButton(ui.View):
         if log: await log.send(f"📌 Ticket claimed by {interaction.user.mention} for `{self.member.name}`")
 
 PRODUCT_KNOWLEDGE = """
-You are VALID AI, assistant of Finest Store.
+You are Finest AI, assistant of Finest Store.
 
 Here are the packs and their exact official definitions:
 
@@ -661,7 +661,7 @@ async def ask_ai_cmd(interaction: discord.Interaction, question: str):
         }
 
         payload = {
-            "model": AI_GENERAL_MODEL,
+            "model": AI_GENERAL_MODELS[0],
             "messages": [
                 {"role": "system", "content": "You are FINEST AI. Always call user 'sir'."},
                 {"role": "user", "content": base_prompt},
