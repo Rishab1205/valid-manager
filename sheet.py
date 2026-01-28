@@ -71,10 +71,11 @@ from googleapiclient.discovery import build
 
 # ⚙️ AUTH & SHEET SERVICE
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-creds = Credentials.from_service_account_file(
-    "credentials.json",
-    scopes=SCOPES
-)
+import json
+from google.oauth2.service_account import Credentials
+
+creds_info = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
+creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
 
 service = build("sheets", "v4", credentials=creds)
 
