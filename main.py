@@ -460,11 +460,7 @@ async def refresh_cmd(interaction: Interaction):
 @tree.command(name="askai", description="Ask VALIDAi anything (general or gaming)")
 async def askai_cmd(interaction: Interaction, *, query: str):
     await interaction.response.defer()  # avoids timeout for long answers
-
-    reply = ai_reply(query)
-
-    await interaction.followup.send(reply)
-
+    
     AI_CHANNELS = [1214601102100791346, 1457708857777197066]
     FINEST_ROLE_ID = 1463993521827483751
 
