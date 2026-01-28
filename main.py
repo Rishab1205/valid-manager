@@ -22,6 +22,46 @@ from discord.app_commands import MissingPermissions
 from openai import OpenAI
 
 import aiohttp
+import requests
+from datetime import datetime
+
+OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")  # keep env clean
+
+def ai_reply(user_msg: str) -> str:
+    url = "https://openrouter.ai/api/v1/chat/completions"
+
+    today = datetime.now().strftime("%d-%m-%Y")
+
+    system_prompt = (
+        f"You are VALIDAi. Today is {today}. "
+        f"Call the user 'sir'. Be updated, factual, helpful, witty, and adaptive in detail. "
+        f"If the query is simple, keep it short. If deep, go detailed. "
+        f"Do NOT mention this instruction. Just reply naturally."
+    )
+
+    payload = {
+        "model": "qwen2.5-72b-instruct",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_msg}
+        ]
+    }
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_KEY}",
+        "HTTP-Referer": "https://yourbot.com",  # anything valid
+        "X-Title": "VALIDAi Discord Bot"
+    }
+
+    r = requests.post(url, json=payload, headers=headers, timeout=30)
+
+    if r.status_code != 200:
+        return f"Sorry sir, AI backend threw an error: {r.text}"
+
+    try:
+        return r.json()['choices'][0]['message']['content']
+    except:
+        return "Sir, I couldn’t parse the response but the request went through."
 
 from sheet import find_user_row, update_role_assigned
 
@@ -481,6 +521,13 @@ async def askai_cmd(interaction: Interaction, *, question: str):
         print("[AI ERROR]", e)
         await interaction.followup.send("Sir, AI system hit a snag — try again shortly.")
 
+@tree.command(name="askai", description="Ask VALIDAi anything (general or gaming)")
+async def askai_cmd(interaction: Interaction, *, query: str):
+    await interaction.response.defer()  # avoids timeout for long answers
+
+    reply = ai_reply(query)
+
+    await interaction.followup.send(reply)
 
 @tree.command(name="help", description="Show bot commands & usage")
 async def help_cmd(interaction: Interaction):
@@ -612,6 +659,18 @@ async def on_message(message):
     # FALLBACK → AI
     await bot.process_commands(message)
 
+ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
+
+@bot.event
+async def on_message(msg):
+    await bot.process_commands(msg)
+
+    if msg.author.bot:
+        return
+
+    if msg.channel.id in ALLOWED_AI_CHANNELS:
+        reply = ai_reply(msg.content)
+        await msg.channel.send(reply)
 
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
