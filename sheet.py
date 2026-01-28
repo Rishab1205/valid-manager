@@ -141,3 +141,34 @@ def get_profile(discord_id: str):
     except Exception as e:
         print("[PROFILE ERROR]", e)
         return None
+
+def update_profile_sheet(member, row):
+    sheet = client.open_by_key(SHEET_ID)
+    tab = sheet.worksheet("Profiles")
+
+    # Extract from Sheet1 purchase row
+    discord_id = row[4]
+    name = row[1]
+    email = row[2]
+    username = row[3]
+    product = row[5]
+    status = row[8]
+    
+    # Format final row
+    final = [
+        discord_id,
+        name,
+        username,
+        email,
+        product,
+        datetime.datetime.now().strftime("%Y-%m-%d"),
+        status
+    ]
+    
+    # Check if already exists
+    existing = tab.col_values(1)
+    if discord_id in existing:
+        idx = existing.index(discord_id) + 1
+        tab.update(f"A{idx}:G{idx}", [final])
+    else:
+        tab.append_row(final)
