@@ -1056,7 +1056,7 @@ def finest_store_embed():
             "<:vgdot:1466358019280470188> Input delay fix, CPU & RAM optimization\n"
             "<:vgdot:1466358019280470188> Best power plan, unnecessary services disabled\n\n"
             
-            " SENSI PACK**\n"
+            "** <:m4x_ReplySingle:1215254311508902030> Sensi Packs**\n"
             "<:vgdot:1466358019280470188> Best X/Y sensitivity, DPI calculation\n"
             "<:vgdot:1466358019280470188> Balanced sensi, low recoil tuning"
         ),
@@ -1071,7 +1071,7 @@ def finest_store_embed():
             "<:vgdot:1466358019280470188> High FPS optimization, no lag guarantee\n"
             "<:vgdot:1466358019280470188> Advanced regedits & batch files\n\n"
             
-            "**FINEST SENSI PRO**\n"
+            "** <:m4x_ReplySingle:1215254311508902030> Finest Sensi Pro**\n"
             "<:vgdot:1466358019280470188> Custom X/Y sensi, resolution & FPS tuning\n"
             "<:vgdot:1466358019280470188> Low recoil configs & aim assist tweaks"
         ),
@@ -1082,7 +1082,7 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg1:1466348025910923470> Ultimate Combo",
         value=(
-            "**Finest Plero Brazilia**\n"
+            "** <:m4x_ReplySingle:1215254311508902030> Finest Plero Brazilia**\n"
             "<:vgdot:1466358019280470188> All-in-one FPS + sensi combo\n"
             "<:vgdot:1466358019280470188> Advanced input tweaks\n"
             "<:vgdot:1466358019280470188> Secret emulator for smoothness\n"
@@ -1095,9 +1095,9 @@ def finest_store_embed():
     embed.add_field(
         name="<:ccad0bd101c82a678c8089572ad4e766:1215199208555151411> OTHER SERVICES",
         value=(
-            "**Discord Server Setup**\n"
+            "** <:m4x_ReplySingle:1215254311508902030> Discord Server Setup**\n"
             "<:vgdot:1466358019280470188> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
-            "**FREEFIRE ID'S**\n"
+            "** <:m4x_ReplySingle:1215254311508902030> Freefire Id's**\n"
             "<:vgdot:1466358019280470188> Starts from ₹999\n"
             "<:vgdot:1466358019280470188> Buy via ticket"
         ),
