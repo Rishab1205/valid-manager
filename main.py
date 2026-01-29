@@ -1048,7 +1048,7 @@ def finest_store_embed():
         url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png"
     )
 
-    # SECTION 1 — STANDARD PACKS
+    # SECTION 1 — "STANDARD PACKS\n\n",
     embed.add_field(
         name=" <:vg9:1466347811170680862> STANDARD PACKS\n\n",
         value=(
