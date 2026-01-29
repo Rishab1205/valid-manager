@@ -862,19 +862,6 @@ AI_GENERAL_CHANNELS = ALLOWED_AI_CHANNELS  # Same thing
 
 
     # ===========================
-    # PRICE CHECK
-    # ===========================
-    product = detect_product(content)
-    if product:
-        p = PRODUCTS[product]
-        return await message.channel.send(
-            f"📦 **{product.title()}**\n"
-            f"💰 Price: **₹{p['price']}**\n"
-            f"🧾 Description: {p['desc']}\n\n"
-            f"To buy, type: `add to cart {product}`"
-        )
-
-    # ===========================
     # AI CHAT RESPONSE (CHANNEL-TYPE)
     # ===========================
     if message.channel.id in ALLOWED_AI_CHANNELS:
