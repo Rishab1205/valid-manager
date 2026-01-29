@@ -28,6 +28,24 @@ from datetime import datetime
 import requests
 from discord.ext.commands import has_role
 
+PACK_CATEGORIES = {
+    "Standard Packs": [
+        "Optimization Pack",
+        "Sensi Pack"
+    ],
+    "Pro & Premium Packs": [
+        "Optimization Pro",
+        "Finest Sensi Pro"
+    ],
+    "Ultimate Combo": [
+        "Finest Plero Brazilia"
+    ],
+    "Other Services": [
+        "Discord Server Setup",
+        "Freefire IDs"
+    ]
+}
+
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")  # keep env clean
 
 def ai_reply(user_msg: str) -> str:
