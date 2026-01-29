@@ -514,7 +514,7 @@ async def send_join_dm(member):
 @bot.event
 async def on_ready():
     print(f"✅ {bot.user} is online 🚀")
-    bot.add_view(FinestStoreView())
+    bot.add_view(CategoryView())
     update_status.start()
     for guild in bot.guilds:
         try:
@@ -733,15 +733,11 @@ User asked: "{question}"
 
 @tree.command(name="store", description="Open Finest Store")
 async def store_cmd(interaction: discord.Interaction):
-    await interaction.channel.send(
+    await interaction.response.send_message(
         embed=finest_store_embed(),
-        view=FinestStoreView()
+        view=CategoryView()
     )
-    await interaction.response.send_message("✅ Store panel posted.", ephemeral=True)
 
-
-
-    
 @bot.tree.command(name="finest", description="Show finest Store poster")
 async def prime(interaction: discord.Interaction):
     await interaction.response.send_message(
@@ -1153,6 +1149,32 @@ def finest_store_embed():
     embed.set_footer(text="Finest Store • Performance is personal")
     return embed
     
+def ticket_warning_embed(pack_name: str):
+    return discord.Embed(
+        title="⚠️ Ticket Creation Warning",
+        description=(
+            "By creating a ticket, you acknowledge:\n\n"
+            "• No fake or test tickets\n"
+            "• Accurate information required\n"
+            "• Staff will assist ASAP\n\n"
+            f"**Ticket Type:** {pack_name}"
+        ),
+        color=0x2B2D31
+    )
+    
+def pack_select_embed(category: str):
+    return discord.Embed(
+        title=category,
+        description="Please select the pack you want to continue with:",
+        color=0x2B2D31
+    )
+
+def device_select_embed():
+    return discord.Embed(
+        description="**Please select your device type.**",
+        color=0x2B2D31
+    )
+
 class CategoryView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -1207,6 +1229,104 @@ class CategoryView(discord.ui.View):
             ephemeral=True
         )
 
+class PackSelectView(discord.ui.View):
+    def __init__(self, category: str):
+        super().__init__(timeout=120)
+        for pack in PACK_CATEGORIES[category]:
+            self.add_item(PackButton(pack))
+
+
+class PackButton(discord.ui.Button):
+    def __init__(self, pack_name: str):
+        super().__init__(
+            label=pack_name,
+            style=discord.ButtonStyle.secondary
+        )
+        self.pack_name = pack_name
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            embed=ticket_warning_embed(self.pack_name),
+            view=TicketConfirmView(self.pack_name),
+            ephemeral=True
+        )
+        
+class TicketConfirmView(discord.ui.View):
+    def __init__(self, pack_name: str):
+        super().__init__(timeout=120)
+        self.pack_name = pack_name
+
+    @discord.ui.button(
+        label="Confirm & Create",
+        style=discord.ButtonStyle.success
+    )
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(
+            embed=device_select_embed(),
+            view=DeviceSelectView(self.pack_name)
+        )
+
+    @discord.ui.button(
+        label="Cancel",
+        style=discord.ButtonStyle.danger
+    )
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.message.delete()
+
+class DeviceSelect(discord.ui.Select):
+    def __init__(self, pack_name: str):
+        self.pack_name = pack_name
+
+        options = [
+            discord.SelectOption(label="Phone (Android)", emoji="🤖"),
+            discord.SelectOption(label="Phone (iPhone)", emoji="🍎"),
+            discord.SelectOption(label="PC / Laptop", emoji="💻"),
+        ]
+
+        super().__init__(
+            placeholder="Select your device type...",
+            options=options
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        device = self.values[0]
+        await interaction.response.send_modal(
+            DeviceSpecsModal(self.pack_name, device)
+        )
+        
+class DeviceSelectView(discord.ui.View):
+    def __init__(self, pack_name: str):
+        super().__init__(timeout=120)
+        self.add_item(DeviceSelect(pack_name))
+
+class DeviceSpecsModal(discord.ui.Modal, title="Device Specifications"):
+    def __init__(self, pack_name: str, device: str):
+        super().__init__()
+        self.pack_name = pack_name
+        self.device = device
+
+        self.specs = discord.ui.TextInput(
+            label="Enter your device specifications",
+            placeholder="e.g. Windows 11, Ryzen 5, 16GB RAM",
+            required=True,
+            max_length=300
+        )
+
+        self.add_item(self.specs)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            f"✅ **Details Submitted**\n\n"
+            f"**Pack:** {self.pack_name}\n"
+            f"**Device:** {self.device}\n"
+            f"**Specs:** {self.specs.value}",
+            ephemeral=True
+        )
+
+        # 🚨 NEXT STEP (later):
+        # create ticket channel
+        # ping staff
+        # save transcript
 
 # ================= START =================
 keep_alive()
