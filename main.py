@@ -1141,53 +1141,38 @@ class FinestStoreView(discord.ui.View):
 
     # ROW 1
     @discord.ui.button(
-        label="Optimization",
-        emoji="⚙️",
-        style=discord.ButtonStyle.primary,
+        label="Prime Optimization",
+        style=discord.ButtonStyle.secondary,
         row=0
     )
-    async def opt(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def prime_opt(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Optimization Pack selected.\nPlease continue to create ticket.",
+            "Prime Optimization selected.",
             ephemeral=True
         )
 
     @discord.ui.button(
-        label="Sensi Pack",
-        emoji="🎯",
-        style=discord.ButtonStyle.primary,
+        label="Prime Sensi",
+        style=discord.ButtonStyle.secondary,
         row=0
     )
-    async def sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def prime_sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Sensi Pack selected.\nPlease continue to create ticket.",
-            ephemeral=True
-        )
-
-    # ROW 2
-    @discord.ui.button(
-        label="Finest Sensi Pro",
-        emoji="🔖",
-        style=discord.ButtonStyle.primary,
-        row=1
-    )
-    async def sensi_pro(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "Finest Sensi Pro selected.\nPlease continue to create ticket.",
+            "Prime Sensi selected.",
             ephemeral=True
         )
 
     @discord.ui.button(
-        label="Finest Plero Brazilia",
-        emoji="⛩",
-        style=discord.ButtonStyle.primary,
-        row=1
+        label="Buy Both",
+        style=discord.ButtonStyle.secondary,
+        row=0
     )
-    async def plero(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def buy_both(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Finest Plero Brazilia selected.\nPlease continue to create ticket.",
+            "Prime Combo selected.",
             ephemeral=True
         )
+
 
 # ================= START =================
 keep_alive()
