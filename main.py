@@ -1105,7 +1105,9 @@ def finest_store_embed():
         value=(
             "\u200b\n"
             "**<a:vga1:1466376555591897272> Discord Server Setup**\n"
-            "<:vg11:1466368081042472961> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
+            "<:vg11:1466368081042472961> Basic Server\n"
+            "<:vg11:1466368081042472961> Pro Server\n" 
+            "<:vg11:1466368081042472961> Finest Server\n"
             "**<a:vga1:1466376555591897272> Freefire Id's**\n"
             "<:vg11:1466368081042472961> Starts from ₹999\n"
             "<:vg11:1466368081042472961> Buy via ticket"
