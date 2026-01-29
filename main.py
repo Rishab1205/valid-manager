@@ -1065,6 +1065,7 @@ def finest_store_embed():
         ),
         inline=False
     )
+    "\u200b\n"
 
     # SECTION 2 — PRO / PREMIUM PACKS
     embed.add_field(
@@ -1081,6 +1082,7 @@ def finest_store_embed():
         ),
         inline=False
     )
+    "\u200b\n"
 
     # SECTION 3 — ULTIMATE PACK
     embed.add_field(
@@ -1095,7 +1097,8 @@ def finest_store_embed():
         ),
         inline=False
     )
-
+    "\u200b\n"
+    
     # SECTION 4 — OTHER SERVICES
     embed.add_field(
         name="<:vg8:1466347840056852621> OTHER SERVICES",
