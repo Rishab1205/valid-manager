@@ -1049,6 +1049,7 @@ def finest_store_embed():
     )
 
     # SECTION 1 — "STANDARD PACKS\n\n",
+    
     embed.add_field(
         name=" <:vg9:1466347811170680862> STANDARD PACKS\n\n",
         value=(
