@@ -1053,12 +1053,12 @@ def finest_store_embed():
         name=" <:vg9:1466347811170680862> STANDARD PACKS\n\n",
         
         value=(
-            "**<a:vga1:1466376555591897272> Optimization Pack**\n\n"
+            "**<:vga1:1466376555591897272> Optimization Pack**\n\n"
             "<:vg11:1466368081042472961> Shutter Reduction\n"
             "<:vg11:1466368081042472961> Input delay fix, CPU & RAM optimization\n"
             "<:vg11:1466368081042472961> Best power plan, unnecessary services disabled\n\n"
            
-            "**<a:vga1:1466376555591897272> Sensi Packs**\n\n"
+            "**<:vga1:1466376555591897272> Sensi Packs**\n\n"
             "<:vg11:1466368081042472961> Best X/Y sensitivity, DPI calculation\n"
             "<:vg11:1466368081042472961> Balanced sensi, low recoil tuning\n"
             "<:vg11:1466368081042472961> Mouse and Keyboard 0 Delay"
@@ -1070,11 +1070,11 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg2:1466347978745970841> Pro & Premium Packs",
         value=(
-            "**<a:vga1:1466376555591897272> Optimization Pro**\n"
+            "**<:vga1:1466376555591897272> Optimization Pro**\n"
             "<:vg11:1466368081042472961> High FPS optimization, no lag guarantee\n"
             "<:vg11:1466368081042472961> Advanced regedits & batch files\n\n"
             
-            "**<a:vga1:1466376555591897272> Finest Sensi Pro**\n"
+            "**<:vga1:1466376555591897272> Finest Sensi Pro**\n"
             "<:vg11:1466368081042472961> Custom X/Y sensi, resolution & FPS tuning\n"
             "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks"
         ),
@@ -1085,7 +1085,7 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg1:1466348025910923470> Ultimate Combo",
         value=(
-            "**<a:vga1:1466376555591897272> Finest Plero Brazilia**\n"
+            "**<:vga1:1466376555591897272> Finest Plero Brazilia**\n"
             "<:vg11:1466368081042472961> All-in-one FPS + sensi combo\n"
             "<:vg11:1466368081042472961> Advanced input tweaks\n"
             "<:vg11:1466368081042472961> Secret emulator for smoothness\n"
