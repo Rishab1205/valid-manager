@@ -721,6 +721,15 @@ async def store_cmd(interaction: discord.Interaction):
     )
     await interaction.response.send_message("✅ Store panel posted.", ephemeral=True)
 
+
+
+    
+@bot.tree.command(name="finest", description="Show finest Store poster")
+async def prime(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        embed=prime_store_poster()
+    )
+
 # ================= CLOSE COMMAND =================
 @tree.command(name="close", description="Close this ticket (staff only)")
 @app_commands.checks.has_role(STAFF_ROLE_ID)
@@ -1036,10 +1045,22 @@ async def on_voice_state_update(member, before, after):
             except Exception as e:
                 print("[VOICE-ROLE ERROR] Remove:", e)
 
+def prime_store_poster():
+    embed = discord.Embed(
+        title="",
+        description="",
+        color=0x2B2D31  # dark premium color (same vibe)
+    )
+
+    embed.set_image(
+        url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png?ex=697c6aef&is=697b196f&hm=ef26cd785b213cc925573233fd70e46fe86d135f3ba86f80c007597ed4d821f7&"
+    )
+
+    return embed
+
 def finest_store_embed():
     embed = discord.Embed(
-        title="🛒 FINEST STORE",
-        description="**Perfect your aim. Rule the game.**",
+        title=" <:vg5:1466347915772690432> FINEST STORE",
         color=0x2B2D31
     )
 
