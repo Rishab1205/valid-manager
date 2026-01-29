@@ -1043,134 +1043,102 @@ def finest_store_embed():
         color=0x2B2D31
     )
 
-    embed.add_field(
-        name="⚙️ Optimization Pack",
-        value=(
-            "• Input Delay Fix\n"
-            "• Stutter Reduction\n"
-            "• CPU Optimization\n"
-            "• CPU & RAM optimization\n"
-            "• Best power plan\n"
-            "• Disable unnecessary services"
-        ),
-        inline=False
-    )
-
-    embed.add_field(
-        name="🎯 Sensi pack",
-        value=(
-            "• Best X/Y sensitivity\n"
-            "• Mouse & DPI Calculation\n"
-            "• Balanced Sensi Profile\n"
-            "• Low Recoil Tuning\n"
-            "• Mouse & keyboard smoothing"
-        ),
-        inline=False
-    )
-
-    embed.add_field(
-        name="⚙️ Optimization pro",
-        value=(
-            "• High FPS Optimization\n"
-            "• Input Delay Reduction\n"
-            "• No Lag Guarantee\n"
-            "• Batch Files\n"
-            "• Regedits to Improve FPS"
-        ),
-        inline=False
-    )
-
-    embed.add_field(
-        name="🔖 Finestt Sensi pro",
-        value=(
-            "• Custom X/Y Sensitivity\n"
-            "• Mouse Input Optimization\n"
-            "• Resolution & FPS Tuning\n"
-            "• Low Recoil Configuration\n"
-            "• Hidden Softwares for Aim Assist\n"
-            "• Custom Resolution\n"
-        ),
-        inline=False
-    )
-
-    embed.add_field(
-        name="⛩ Finest Plero Brazilia",
-        value=(
-            "• All-in-One Tweak Set\n"
-            "• FPS + Sensi Combo\n"
-            "• Advanced Input Tweaks\n"
-            "• Secret Emulator for Smoothness\n"
-            "• Best Regedits for Headshots\n"
-            "• Softwares for Aim & FPS\n"
-        ),
-        inline=False
-    )
-
-    embed.add_field(
-        name="⚙️ Self made Discord Server ",
-        value=(         
-            "• Basic server Rs 399\n"
-            "• Professional Server - Rs 799\n"
-            "• Finest Server dash Rs 1099\n"
-            "• To buy create ticket using /ticket\n"
-            "• Visit Our website for further assistance and packs\n"
-        ),
-        inline=False
-    )
-
-    embed.add_field(
-        name="💶 Freefire ID's",
-        value=(
-            "• Starts from Rs 999\n"
-            "• To buy create ticket\n"
-            "• Command /ticket\n"
-        ),
-        inline=False
-    )
+    # IMAGE AT TOP
     embed.set_image(
-        url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png?ex=697bc22f&is=697a70af&hm=31cbd397b724aba252682f62ca86400f81b8afd1529b1b0fe24af9c89f950648&"
+        url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png"
+    )
+
+    # SECTION 1 — STANDARD PACKS
+    embed.add_field(
+        name="Standard Packs",
+        value=(
+            "**⚒ Optimization Pack**\n"
+            "• Input delay fix, CPU & RAM optimization\n"
+            "• Best power plan, unnecessary services disabled\n\n"
+            "**Sensi Pack**\n"
+            "• Best X/Y sensitivity, DPI calculation\n"
+            "• Balanced sensi, low recoil tuning"
+        ),
+        inline=False
+    )
+
+    # SECTION 2 — PRO / PREMIUM PACKS
+    embed.add_field(
+        name="🛍️ Pro & Premium Packs",
+        value=(
+            "**Optimization Pro**\n"
+            "• High FPS optimization, no lag guarantee\n"
+            "• Advanced regedits & batch files\n\n"
+            "**Finest Sensi Pro**\n"
+            "• Custom X/Y sensi, resolution & FPS tuning\n"
+            "• Low recoil configs & aim assist tweaks"
+        ),
+        inline=False
+    )
+
+    # SECTION 3 — ULTIMATE PACK
+    embed.add_field(
+        name="🛍️ Ultimate Combo",
+        value=(
+            "**Finest Plero Brazilia**\n"
+            "• All-in-one FPS + sensi combo\n"
+            "• Advanced input tweaks\n"
+            "• Secret emulator for smoothness\n"
+            "• Best regedits for headshots"
+        ),
+        inline=False
+    )
+
+    # SECTION 4 — OTHER SERVICES
+    embed.add_field(
+        name="⏳ Other Services",
+        value=(
+            "**Discord Server Setup**\n"
+            "• Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
+            "**Freefire IDs**\n"
+            "• Starts from ₹999\n"
+            "• Buy via ticket"
+        ),
+        inline=False
     )
 
     embed.set_footer(text="Finest Store • Performance is personal")
     return embed
+
 
 class FinestStoreView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
     # ROW 1
-    @discord.ui.button(label="Optimization", emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Optimization" emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
     async def opt(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "🎟️ **Optimization selected**\nTicket will be created.",
+            "Optimization Pack selected.\nPlease continue to create ticket.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Sensi Pack", emoji="🎯", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Sensi Pack" emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
     async def sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "🎟️ **Sensi Pack selected**\nTicket will be created.",
+            "Sensi Pack selected.\nPlease continue to create ticket.",
             ephemeral=True
         )
 
     # ROW 2
-    @discord.ui.button(label="Finest Sensi Pro", emoji="🔖", style=discord.ButtonStyle.success, row=1)
+    @discord.ui.button(label="Finest Sensi Pro" emoji="⚙️", style=discord.ButtonStyle.primary, row=1)
     async def sensi_pro(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "🔖 **Finest Sensi Pro selected**\nTicket will be created.",
+            "Finest Sensi Pro selected.\nPlease continue to create ticket.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Finest Plero Brazilia", emoji="⛩", style=discord.ButtonStyle.success, row=1)
+    @discord.ui.button(label="Finest Plero Brazilia" emoji="⚙️", style=discord.ButtonStyle.primary, row=1)
     async def plero(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "⛩ **Finest Plero Brazilia selected**\nTicket will be created.",
+            "Finest Plero Brazilia selected.\nPlease continue to create ticket.",
             ephemeral=True
         )
-
-    @discord.ui.button(label="Close", emoji="❌", style=discord.ButtonStyle.danger, row=1)
-    async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.message.delete()
 
 # ================= START =================
 keep_alive()
