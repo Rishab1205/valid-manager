@@ -860,14 +860,6 @@ async def ping(ctx):
 ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
 AI_GENERAL_CHANNELS = ALLOWED_AI_CHANNELS  # Same thing
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    user_id = message.author.id
-    content = message.content.lower()
-
     # ===========================
     # CART COMMANDS
     # ===========================
@@ -980,13 +972,7 @@ async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
     except Exception as e:
         return f"⚠️ Sorry sir, AI is offline. Error: {e}"
 
-# ========== AI AUTO-REPLY (MESSAGE EVENT) ==========
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
 
-    await bot.process_commands(message)
 # ========== AI CONFIG (Loads from environment) ==========
 import os
 import json
@@ -1225,20 +1211,7 @@ class CategoryView(discord.ui.View):
             view=PackSelectView("other"),
             ephemeral=True
         )
-
-
-    @discord.ui.button(
-        label="Other Services",
-        style=discord.ButtonStyle.secondary,
-        row=1
-    )
-    async def other(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            embed=pack_select_embed("Other Services"),
-            view=PackSelectView("Other Services"),
-            ephemeral=True
-        )
-
+        
 class PackSelectView(discord.ui.View):
     def __init__(self, category: str):
         super().__init__(timeout=120)
@@ -1267,48 +1240,45 @@ class TicketConfirmView(discord.ui.View):
         self.pack_name = pack_name
 
     @discord.ui.button(
-    label="Confirm & Create",
-    style=discord.ButtonStyle.success
-)
-async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
-    guild = interaction.guild
-    user = interaction.user
-
-    # 🚫 STEP 11 — DUPLICATE TICKET CHECK
-    for ch in guild.text_channels:
-        if ch.category and ch.category.id == TICKET_CATEGORY_ID:
-            if ch.name == f"ticket-{user.name.lower()}":
-                await interaction.response.send_message(
-                    f"❌ You already have an open ticket: {ch.mention}",
-                    ephemeral=True
-                )
-                return
-
-    category = discord.utils.get(
-        guild.categories,
-        id=TICKET_CATEGORY_ID
+        label="Confirm & Create",
+        style=discord.ButtonStyle.success
     )
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        guild = interaction.guild
+        user = interaction.user
 
-    channel = await guild.create_text_channel(
-        name=f"ticket-{user.name}",
-        category=category,
-        overwrites={
-            guild.default_role: discord.PermissionOverwrite(view_channel=False),
-            user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
-            guild.get_role(STAFF_ROLE_ID): discord.PermissionOverwrite(view_channel=True)
-        }
-    )
+        # 🚫 STEP 11 — DUPLICATE TICKET CHECK
+        for ch in guild.text_channels:
+            if ch.category and ch.category.id == TICKET_CATEGORY_ID:
+                if ch.name == f"ticket-{user.name.lower()}":
+                    await interaction.response.send_message(
+                        f"❌ You already have an open ticket: {ch.mention}",
+                        ephemeral=True
+                    )
+                    return
 
-    await channel.send(
-        content=f"<@&{STAFF_ROLE_ID}>",
-        embed=device_select_embed(),
-        view=DeviceSelectView(self.pack_name)
-    )
+        category = guild.get_channel(TICKET_CATEGORY_ID)
 
-    await interaction.response.send_message(
-        f"✅ Ticket created: {channel.mention}",
-        ephemeral=True
-    )
+        channel = await guild.create_text_channel(
+            name=f"ticket-{user.name.lower()}",
+            category=category,
+            overwrites={
+                guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
+                guild.get_role(STAFF_ROLE_ID): discord.PermissionOverwrite(view_channel=True)
+            }
+        )
+
+        await channel.send(
+            content=f"<@&{STAFF_ROLE_ID}>",
+            embed=device_select_embed(),
+            view=DeviceSelectView(self.pack_name)
+        )
+
+        await interaction.response.send_message(
+            f"✅ Ticket created: {channel.mention}",
+            ephemeral=True
+        )
 
     @discord.ui.button(
         label="Cancel",
