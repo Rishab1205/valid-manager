@@ -1050,9 +1050,10 @@ def finest_store_embed():
 
     # SECTION 1 — STANDARD PACKS
     embed.add_field(
-        name="Standard Packs",
+        name=" <:vg9:1466347811170680862> Standard Packs",
+        
         value=(
-            "**⚒ Optimization Pack**\n"
+            "** Optimization Pack**\n"
             "• Input delay fix, CPU & RAM optimization\n"
             "• Best power plan, unnecessary services disabled\n\n"
             "**Sensi Pack**\n"
@@ -1063,6 +1064,7 @@ def finest_store_embed():
     )
 
     # SECTION 2 — PRO / PREMIUM PACKS
+    
     embed.add_field(
         name="🛍️ Pro & Premium Packs",
         value=(
@@ -1077,6 +1079,7 @@ def finest_store_embed():
     )
 
     # SECTION 3 — ULTIMATE PACK
+    
     embed.add_field(
         name="🛍️ Ultimate Combo",
         value=(
@@ -1090,6 +1093,7 @@ def finest_store_embed():
     )
 
     # SECTION 4 — OTHER SERVICES
+    
     embed.add_field(
         name="⏳ Other Services",
         value=(
