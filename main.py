@@ -1050,7 +1050,7 @@ def finest_store_embed():
 
     # SECTION 1 — "STANDARD PACKS\n\n",
     embed.add_field(
-        name=" <:vg9:1466347811170680862> STANDARD PACKS\n\n",
+        name=" <:vg9:1466347811170680862> STANDARD PACKS\\n",
         
         value=(
             "**<a:vga1:1466376555591897272> Optimization Pack**\n\n"
@@ -1064,7 +1064,7 @@ def finest_store_embed():
             "<:vg11:1466368081042472961> Mouse and Keyboard 0 Delay"
         ),
         inline=False
-    )
+    )\n\n
 
     # SECTION 2 — PRO / PREMIUM PACKS
     embed.add_field(
@@ -1074,12 +1074,12 @@ def finest_store_embed():
             "<:vg11:1466368081042472961> High FPS optimization, no lag guarantee\n"
             "<:vg11:1466368081042472961> Advanced regedits & batch files\n\n"
             
-            "**<aa:vga1:1466376555591897272> Finest Sensi Pro**\n"
+            "**<a:vga1:1466376555591897272> Finest Sensi Pro**\n"
             "<:vg11:1466368081042472961> Custom X/Y sensi, resolution & FPS tuning\n"
-            "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks\n\n"
+            "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks\n"
         ),
         inline=False
-    )
+    )\n\n
 
     # SECTION 3 — ULTIMATE PACK
     embed.add_field(
