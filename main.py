@@ -496,6 +496,7 @@ async def send_join_dm(member):
 @bot.event
 async def on_ready():
     print(f"✅ {bot.user} is online 🚀")
+    bot.add_view(FinestStoreView())
     update_status.start()
     for guild in bot.guilds:
         try:
@@ -712,21 +713,13 @@ User asked: "{question}"
 
     await interaction.followup.send(reply)
 
-@tree.command(name="store", description="Open the Finest Store panel")
+@tree.command(name="store", description="Open Finest Store")
 async def store_cmd(interaction: discord.Interaction):
-    channel = bot.get_channel(1466027151978401929)
-    if not channel:
-        return await interaction.response.send_message("Channel not found.", ephemeral=True)
-
-    embed = discord.Embed(
-        title="🟣 Finest Store — Elevate Your Gameplay",
-        description="Choose your product category below.\nPerformance is personal.",
-        color=0x2B2D31
+    await interaction.channel.send(
+        embed=finest_store_embed(),
+        view=FinestStoreView()
     )
-
-    embed.set_image(url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png?ex=697bc22f&is=697a70af&hm=31cbd397b724aba252682f62ca86400f81b8afd1529b1b0fe24af9c89f950648&")  # replace with your banner
-    await channel.send(embed=embed, view=StoreMainButtons())
-    await interaction.response.send_message("Store panel posted!", ephemeral=True)
+    await interaction.response.send_message("✅ Store panel posted.", ephemeral=True)
 
 # ================= CLOSE COMMAND =================
 @tree.command(name="close", description="Close this ticket (staff only)")
@@ -1042,392 +1035,144 @@ async def on_voice_state_update(member, before, after):
                 await member.remove_roles(role, reason="Left voice channel")
             except Exception as e:
                 print("[VOICE-ROLE ERROR] Remove:", e)
-                
-# ================= STORE UI SYSTEM =================
-class StoreMainButtons(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
 
-    @discord.ui.button(label="Optimization Pack", style=discord.ButtonStyle.primary,emoji="⚙️")
-    async def opt_pack(self, interaction, button):
-        await send_warning(interaction, "Optimization Pack")
-
-    @discord.ui.button(label="Sensi Pack", style=discord.ButtonStyle.primary,emoji="🎯")
-    async def sensi(self, interaction, button):
-        await send_warning(interaction, "Sensi Pack")
-
-    @discord.ui.button(label="Optimization Pro", style=discord.ButtonStyle.primary,emoji="🚀")
-    async def opt_pro(self, interaction, button):
-        await send_warning(interaction, "Optimization Pro")
-
-    @discord.ui.button(label="Finest Sensi Pro", style=discord.ButtonStyle.primary,emoji="💠")
-    async def sensi_pro(self, interaction, button):
-        await send_warning(interaction, "Finest Sensi Pro")
-
-    @discord.ui.button(label="Prime Pack", style=discord.ButtonStyle.primary,emoji="👑")
-    async def prime(self, interaction, button):
-        await send_warning(interaction, "Prime Pack")
-
-    @discord.ui.button(label="FreeFire IDs", style=discord.ButtonStyle.secondary,emoji="🔥")
-    async def ffid(self, interaction, button):
-        await send_warning(interaction, "FreeFire ID")
-
-    @discord.ui.button(label="Server Setup", style=discord.ButtonStyle.secondary,emoji="🛠️")
-    async def server(self, interaction, button):
-        await send_warning(interaction, "Server Setup")
-
-# ================= STORE SYSTEM (SAFE ADDON) =================
-
-STORE_CHANNEL_ID = 1466027151978401929
-STORE_TICKET_CATEGORY_ID = 1466111437469651175
-STORE_STAFF_ROLE_ID = 1464249885669851360
-STORE_EMBED_COLOR = 0x2B2D31  # plain dark like your message
-
-# ---------- STEP 3: WARNING MESSAGE ----------
-async def send_store_warning(interaction, product_name):
+def finest_store_embed():
     embed = discord.Embed(
-        title="⚠️ Ticket Creation Warning",
-        description=(
-            "Before continuing, please read carefully:\n\n"
-            "• Opening tickets without purpose is not allowed\n"
-            "• Fake or spam tickets may lead to punishment\n"
-            "• Provide correct device information\n"
-            "• Staff replies based on availability\n\n"
-            f"**Selected Product:** `{product_name}`"
+        title="🛒 FINEST STORE",
+        description="**Perfect your aim. Rule the game.**",
+        color=0x2B2D31
+    )
+
+    embed.add_field(
+        name="⚙️ Optimization Pack",
+        value=(
+            "• Input Delay Fix\n"
+            "• Stutter Reduction\n"
+            "• CPU Optimization\n"
+            "• CPU & RAM optimization\n"
+            "• Best power plan\n"
+            "• Disable unnecessary services"
         ),
-        color=STORE_EMBED_COLOR
-    )
-    await interaction.response.send_message(
-        embed=embed,
-        view=StoreConfirmView(product_name),
-        ephemeral=True
+        inline=False
     )
 
-# ---------- STEP 4: CONFIRM / CANCEL ----------
-class StoreConfirmView(discord.ui.View):
-    def __init__(self, product_name):
-        super().__init__(timeout=60)
-        self.product_name = product_name
-
-    @discord.ui.button(label="Confirm & Continue", style=discord.ButtonStyle.success, emoji="✅")
-    async def confirm(self, interaction, button):
-        await ask_store_device(interaction, self.product_name)
-
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, emoji="❌")
-    async def cancel(self, interaction, button):
-        await interaction.response.edit_message(
-            content="❌ Ticket creation cancelled.",
-            embed=None,
-            view=None
-        )
-
-# ---------- STEP 5: DEVICE SELECT ----------
-async def ask_store_device(interaction, product_name):
-    await interaction.response.send_message(
-        content="Please select your device type:",
-        view=StoreDeviceView(product_name),
-        ephemeral=True
-    )
-
-class StoreDeviceView(discord.ui.View):
-    def __init__(self, product_name):
-        super().__init__(timeout=60)
-        self.product_name = product_name
-
-    @discord.ui.select(
-        placeholder="Select your device",
-        options=[
-            discord.SelectOption(label="Android Phone", emoji="📱"),
-            discord.SelectOption(label="iPhone", emoji="🍎"),
-            discord.SelectOption(label="PC / Laptop", emoji="💻"),
-        ]
-    )
-    async def select(self, interaction, select):
-        device = select.values[0]
-        await ask_store_specs(interaction, self.product_name, device)
-
-# ---------- STEP 6: SPECIFICATIONS MODAL ----------
-async def ask_store_specs(interaction, product_name, device):
-    await interaction.response.send_modal(
-        StoreSpecsModal(product_name, device)
-    )
-
-class StoreSpecsModal(ui.Modal, title="Device Specifications"):
-    def __init__(self, product_name, device):
-        super().__init__()
-        self.product_name = product_name
-        self.device = device
-
-        self.specs = ui.TextInput(
-            label="Enter your device specifications",
-            placeholder="CPU / RAM / DPI / Emulator / Model etc",
-            style=discord.TextStyle.long,
-            required=True,
-            max_length=400
-        )
-        self.add_item(self.specs)
-
-    async def on_submit(self, interaction):
-        await create_store_ticket(
-            member=interaction.user,
-            product=self.product_name,
-            device=self.device,
-            specs=self.specs.value
-        )
-        await interaction.response.send_message(
-            "✅ Your ticket has been created. Please wait for staff.",
-            ephemeral=True
-        )
-
-# ---------- STEP 7: TICKET CREATION ----------
-async def create_store_ticket(member, product, device, specs):
-    guild = member.guild
-    category = guild.get_channel(STORE_TICKET_CATEGORY_ID)
-    staff_role = guild.get_role(STORE_STAFF_ROLE_ID)
-
-    ticket = await guild.create_text_channel(
-        name=f"{product.lower().replace(' ', '-')}-{member.name}",
-        category=category,
-        overwrites={
-            guild.default_role: discord.PermissionOverwrite(view_channel=False),
-            member: discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                attach_files=True,
-                embed_links=True
-            ),
-            staff_role: discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                attach_files=True,
-                embed_links=True
-            ),
-        }
-    )
-
-    embed = discord.Embed(
-        title="🟣 Finest Store Ticket",
-        description=(
-            f"**User:** {member.mention}\n"
-            f"**Product:** {product}\n"
-            f"**Device:** {device}\n\n"
-            f"**Specifications:**\n{specs}"
+    embed.add_field(
+        name="🎯 Sensi pack",
+        value=(
+            "• Best X/Y sensitivity\n"
+            "• Mouse & DPI Calculation\n"
+            "• Balanced Sensi Profile\n"
+            "• Low Recoil Tuning\n"
+            "• Mouse & keyboard smoothing"
         ),
-        color=STORE_EMBED_COLOR
+        inline=False
     )
 
-    await ticket.send(
-        content=f"{member.mention} <@&{STORE_STAFF_ROLE_ID}>",
-        embed=embed
+    embed.add_field(
+        name="⚙️ Optimization pro",
+        value=(
+            "• High FPS Optimization\n"
+            "• Input Delay Reduction\n"
+            "• No Lag Guarantee\n"
+            "• Batch Files\n"
+            "• Regedits to Improve FPS"
+        ),
+        inline=False
     )
 
-# ================= END STORE SYSTEM =================
-class StoreView(discord.ui.View):
+    embed.add_field(
+        name="🔖 Finestt Sensi pro",
+        value=(
+            "• Custom X/Y Sensitivity\n"
+            "• Mouse Input Optimization\n"
+            "• Resolution & FPS Tuning\n"
+            "• Low Recoil Configuration\n"
+            "• Hidden Softwares for Aim Assist\n"
+            "• Custom Resolution\n"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="⛩ Finest Plero Brazilia",
+        value=(
+            "• All-in-One Tweak Set\n"
+            "• FPS + Sensi Combo\n"
+            "• Advanced Input Tweaks
+            "• Secret Emulator for Smoothness\n"
+            "• Best Regedits for Headshots\n"
+            "• Softwares for Aim & FPS\n"
+        ),
+        inline=False
+    )
+    
+    embed.add_field(
+        name="⚙️ Self made Discord Server ",
+        value=(         
+            "• Basic server Rs 399\n"
+            "• Professional Server - Rs 799\n"
+            "• Finest Server dash Rs 1099\n"
+            "• To buy create ticket using /ticket\n"
+            "• Visit Our website for further assistance and packs\n"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="💶 Freefire ID's",
+        value=(
+            "• Starts from Rs 999\n"
+            "• To buy create ticket\n"
+            "• Command /ticket\n"
+        ),
+        inline=False
+    )
+    embed.set_image(
+        url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png?ex=697bc22f&is=697a70af&hm=31cbd397b724aba252682f62ca86400f81b8afd1529b1b0fe24af9c89f950648&"
+    )
+
+    embed.set_footer(text="Finest Store • Performance is personal")
+    return embed
+
+class FinestStoreView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
     # ROW 1
-    @discord.ui.button(
-        label="⚙️ Optimization Pack",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
-    async def opt_pack(self, interaction, button):
-        await start_store_flow(interaction, "Optimization Pack")
-
-    @discord.ui.button(
-        label="🎯 Sensi Pack",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
-    async def sensi_pack(self, interaction, button):
-        await start_store_flow(interaction, "Sensi Pack")
-
-    # ROW 2
-    @discord.ui.button(
-        label="🚀 Optimization Pro",
-        style=discord.ButtonStyle.secondary,
-        row=1
-    )
-    async def opt_pro(self, interaction, button):
-        await start_store_flow(interaction, "Optimization Pro")
-
-    @discord.ui.button(
-        label="💎 Finest Sensi Pro",
-        style=discord.ButtonStyle.secondary,
-        row=1
-    )
-    async def finest_sensi(self, interaction, button):
-        await start_store_flow(interaction, "Finest Sensi Pro")
-
-    # ROW 3
-    @discord.ui.button(
-        label="👑 Prime Pack",
-        style=discord.ButtonStyle.primary,
-        row=2
-    )
-    async def prime_pack(self, interaction, button):
-        await start_store_flow(interaction, "Prime Pack")
-
-    # ROW 4
-    @discord.ui.button(
-        label="🔥 Freefire ID",
-        style=discord.ButtonStyle.secondary,
-        row=3
-    )
-    async def ff_id(self, interaction, button):
-        await start_store_flow(interaction, "Freefire ID")
-
-    @discord.ui.button(
-        label="🛠️ Server Setup",
-        style=discord.ButtonStyle.secondary,
-        row=3
-    )
-    async def server(self, interaction, button):
-        await start_store_flow(interaction, "Server Setup")
-class StoreView(discord.ui.View):
-    def __init__(self):
-        super().__init__(timeout=None)
-
-    # ROW 1
-    @discord.ui.button(
-        label="⚙️ Optimization Pack",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
-    async def opt_pack(self, interaction, button):
-        await start_store_flow(interaction, "Optimization Pack")
-
-    @discord.ui.button(
-        label="🎯 Sensi Pack",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
-    async def sensi_pack(self, interaction, button):
-        await start_store_flow(interaction, "Sensi Pack")
-
-    # ROW 2
-    @discord.ui.button(
-        label="🚀 Optimization Pro",
-        style=discord.ButtonStyle.secondary,
-        row=1
-    )
-    async def opt_pro(self, interaction, button):
-        await start_store_flow(interaction, "Optimization Pro")
-
-    @discord.ui.button(
-        label="💎 Finest Sensi Pro",
-        style=discord.ButtonStyle.secondary,
-        row=1
-    )
-    async def finest_sensi(self, interaction, button):
-        await start_store_flow(interaction, "Finest Sensi Pro")
-
-    # ROW 3
-    @discord.ui.button(
-        label="👑 Prime Pack",
-        style=discord.ButtonStyle.primary,
-        row=2
-    )
-    async def prime_pack(self, interaction, button):
-        await start_store_flow(interaction, "Prime Pack")
-
-    # ROW 4
-    @discord.ui.button(
-        label="🔥 Freefire ID",
-        style=discord.ButtonStyle.secondary,
-        row=3
-    )
-    async def ff_id(self, interaction, button):
-        await start_store_flow(interaction, "Freefire ID")
-
-    @discord.ui.button(
-        label="🛠️ Server Setup",
-        style=discord.ButtonStyle.secondary,
-        row=3
-    )
-    async def server(self, interaction, button):
-        await start_store_flow(interaction, "Server Setup")
-class ConfirmView(discord.ui.View):
-    def __init__(self, pack):
-        super().__init__(timeout=120)
-        self.pack = pack
-
-    @discord.ui.button(label="Confirm & Create", style=discord.ButtonStyle.success)
-    async def confirm(self, interaction, button):
+    @discord.ui.button(label=" Optimization", emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
+    async def opt(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Select your device type:",
-            view=DeviceSelectView(self.pack),
+            "🎟️ **Optimization selected**\nTicket will be created.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger)
-    async def cancel(self, interaction, button):
-        await interaction.response.edit_message(
-            content="❌ Ticket creation cancelled.",
-            embed=None,
-            view=None
-        )
-class ConfirmView(discord.ui.View):
-    def __init__(self, pack):
-        super().__init__(timeout=120)
-        self.pack = pack
-
-    @discord.ui.button(label="Confirm & Create", style=discord.ButtonStyle.success)
-    async def confirm(self, interaction, button):
+    @discord.ui.button(label="Sensi pack", emoji="🎯", style=discord.ButtonStyle.primary, row=0)
+    async def sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Select your device type:",
-            view=DeviceSelectView(self.pack),
+            "🎟️ **Sensi pack selected**\nTicket will be created.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger)
-    async def cancel(self, interaction, button):
-        await interaction.response.edit_message(
-            content="❌ Ticket creation cancelled.",
-            embed=None,
-            view=None
+    # ROW 2
+    @discord.ui.button(label="Finestt Sensi pro", emoji="🔖", style=discord.ButtonStyle.success, row=1)
+    async def both(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "🔖 **Finestt Sensi pro**\nTicket will be created.",
+            ephemeral=True
         )
-class SpecsModal(discord.ui.Modal, title="Device Specifications"):
-    specs = discord.ui.TextInput(
-        label="Enter your device specifications",
-        style=discord.TextStyle.long,
-        placeholder="Example: Ryzen 5, GTX 1650, 16GB RAM",
-        required=True
-    )
-
-    def __init__(self, pack, device):
-        super().__init__()
-        self.pack = pack
-        self.device = device
-
-    async def on_submit(self, interaction):
-        await create_store_ticket(
-            interaction,
-            self.pack,
-            self.device,
-            self.specs.value
+        
+    # ROW 3
+    @discord.ui.button(label="Finest Plero Brazilia", emoji="⛩", style=discord.ButtonStyle.success, row=1)
+    async def both(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "⛩ **Finestt Sensi pro**\nTicket will be created.",
+            ephemeral=True
         )
-class SpecsModal(discord.ui.Modal, title="Device Specifications"):
-    specs = discord.ui.TextInput(
-        label="Enter your device specifications",
-        style=discord.TextStyle.long,
-        placeholder="Example: Ryzen 5, GTX 1650, 16GB RAM",
-        required=True
-    )
+        
+    @discord.ui.button(label="Close", emoji="❌", style=discord.ButtonStyle.danger, row=1)
+    async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.message.delete()
 
-    def __init__(self, pack, device):
-        super().__init__()
-        self.pack = pack
-        self.device = device
-
-    async def on_submit(self, interaction):
-        await create_store_ticket(
-            interaction,
-            self.pack,
-            self.device,
-            self.specs.value
-        )
 
 # ================= START =================
 keep_alive()
