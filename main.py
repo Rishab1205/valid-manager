@@ -1135,41 +1135,57 @@ def finest_store_embed():
     embed.set_footer(text="Finest Store • Performance is personal")
     return embed
     
-class FinestStoreView(discord.ui.View):
+class CategoryView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
+    # ROW 0
+    @discord.ui.button(
+        label="Standard Packs",
+        style=discord.ButtonStyle.secondary,
+        row=0
+    )
+    async def standard(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("Standard Packs"),
+            view=PackSelectView("Standard Packs"),
+            ephemeral=True
+        )
+
+    @discord.ui.button(
+        label="Pro & Premium",
+        style=discord.ButtonStyle.secondary,
+        row=0
+    )
+    async def pro(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("Pro & Premium Packs"),
+            view=PackSelectView("Pro & Premium Packs"),
+            ephemeral=True
+        )
+
     # ROW 1
     @discord.ui.button(
-        label="Prime Optimization",
+        label="Ultimate Combo",
         style=discord.ButtonStyle.secondary,
-        row=0
+        row=1
     )
-    async def prime_opt(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def ultimate(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Prime Optimization selected.",
+            embed=pack_select_embed("Ultimate Combo"),
+            view=PackSelectView("Ultimate Combo"),
             ephemeral=True
         )
 
     @discord.ui.button(
-        label="Prime Sensi",
+        label="Other Services",
         style=discord.ButtonStyle.secondary,
-        row=0
+        row=1
     )
-    async def prime_sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def other(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "Prime Sensi selected.",
-            ephemeral=True
-        )
-
-    @discord.ui.button(
-        label="Buy Both",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
-    async def buy_both(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(
-            "Prime Combo selected.",
+            embed=pack_select_embed("Other Services"),
+            view=PackSelectView("Other Services"),
             ephemeral=True
         )
 
