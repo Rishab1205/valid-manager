@@ -1018,13 +1018,6 @@ async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
         return f"⚠️ Sorry sir, AI is offline. Error: {e}"
 
 # ========== AI AUTO-REPLY (MESSAGE EVENT) ==========
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    await bot.process_commands(message)
-
     # Auto AI reply only inside allowed channels
     if message.channel.id in AI_GENERAL_CHANNELS:
         user = message.author
@@ -1043,7 +1036,8 @@ async def on_message(message):
         log_ch = bot.get_channel(FINEST_LOG_CHANNEL)
         if log_ch:
             await log_ch.send(f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {text}")
-
+            
+ await bot.process_commands(message)
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
 async def on_voice_state_update(member, before, after):
