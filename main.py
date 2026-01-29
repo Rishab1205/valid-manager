@@ -34,18 +34,18 @@ ARCHIVE_CATEGORY_ID = 1464761039769042955
 STAFF_ROLE_ID = 1464249885669851360
 
 PACK_CATEGORIES = {
-    "Standard Packs": [
+    "standard": [
         "Optimization Pack",
         "Sensi Pack"
     ],
-    "Pro & Premium Packs": [
+    "pro": [
         "Optimization Pro",
         "Finest Sensi Pro"
     ],
-    "Ultimate Combo": [
+    "ultimate": [
         "Finest Plero Brazilia"
     ],
-    "Other Services": [
+    "other": [
         "Discord Server Setup",
         "Freefire IDs"
     ]
@@ -187,7 +187,7 @@ def membership_embed():
 # ================= AI CLIENT =================
 import os
 
-client = OpenAI(
+ai_client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1"
 )
@@ -569,12 +569,20 @@ async def on_member_join(member):
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
 async def update_status():
-    if not bot.guilds: return
+    if not bot.guilds:
+        return
+
     guild = bot.guilds[0]
+
+    online = sum(
+        1 for m in guild.members
+        if m.status != discord.Status.offline
+    )
+
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
-            name=f"{guild.member_count} users | Valid Subs"
+            name=f"{online} online | Finest Store"
         )
     )
 
