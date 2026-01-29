@@ -865,9 +865,48 @@ async def meme_cmd(interaction: Interaction):
 async def ping(ctx):
     await ctx.send("🏓 Pong! Bot online.")
 
-ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
-AI_GENERAL_CHANNELS = ALLOWED_AI_CHANNELS  # Same thing
 
+# ================== AI CONFIG ==================
+import os
+import json
+
+ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
+
+AI_GENERAL_MODELS = json.loads(
+    os.getenv("AI_GENERAL_MODELS", '["gpt-4o-mini"]')
+)
+AI_ADVANCED_MODEL = os.getenv("AI_ADVANCED_MODEL", "gpt-4o-mini")
+
+FINEST_MEMBER_ROLE = int(os.getenv("FINEST_MEMBER_ROLE", "0"))
+FINEST_LOG_CHANNEL = int(os.getenv("FINEST_LOG_CHANNEL", "0"))
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+
+# ================== AI REQUEST FUNCTION ==================
+async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
+    import aiohttp
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 500
+                }
+            ) as resp:
+                data = await resp.json()
+                return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"⚠️ Sorry sir, AI is offline. Error: {e}"
+
+
+# ================== ONE AND ONLY on_message ==================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -882,28 +921,37 @@ async def on_message(message):
     if content.startswith("add to cart"):
         product = detect_product(content)
         if not product:
-            return await message.channel.send("❌ Sir, product not found.")
+            await message.channel.send("❌ Sir, product not found.")
+            return
         user_carts.setdefault(user_id, []).append(product)
-        return await message.channel.send(f"🛒 Added **{product}** to your cart, sir.")
+        await message.channel.send(f"🛒 Added **{product}** to your cart, sir.")
+        return
 
     if content.startswith("remove from cart"):
         product = detect_product(content)
         if not product or product not in user_carts.get(user_id, []):
-            return await message.channel.send("❌ Sir, product not in cart.")
+            await message.channel.send("❌ Sir, product not in cart.")
+            return
         user_carts[user_id].remove(product)
-        return await message.channel.send(f"🗑 Removed **{product}** from your cart, sir.")
+        await message.channel.send(f"🗑 Removed **{product}** from your cart, sir.")
+        return
 
     if content == "cart":
         cart = user_carts.get(user_id, [])
         if not cart:
-            return await message.channel.send("🛒 Your cart is empty, sir.")
+            await message.channel.send("🛒 Your cart is empty, sir.")
+            return
         total = sum(PRODUCTS[p]["price"] for p in cart)
         items = "\n".join(f"• {p} — ₹{PRODUCTS[p]['price']}" for p in cart)
-        return await message.channel.send(f"🛒 **Your Cart:**\n{items}\n\n💰 **Total: ₹{total}**")
+        await message.channel.send(
+            f"🛒 **Your Cart:**\n{items}\n\n💰 **Total: ₹{total}**"
+        )
+        return
 
     if content == "clearcart":
         user_carts[user_id] = []
-        return await message.channel.send("♻️ Cart cleared, sir.")
+        await message.channel.send("♻️ Cart cleared, sir.")
+        return
 
     # ===========================
     # PRICE CHECK
@@ -911,141 +959,42 @@ async def on_message(message):
     product = detect_product(content)
     if product:
         p = PRODUCTS[product]
-        return await message.channel.send(
+        await message.channel.send(
             f"📦 **{product.title()}**\n"
             f"💰 Price: **₹{p['price']}**\n"
             f"🧾 Description: {p['desc']}\n\n"
             f"To buy, type: `add to cart {product}`"
         )
-
+        return
 
     # ===========================
-    # AI CHAT RESPONSE (CHANNEL-TYPE)
+    # AI CHAT (ONLY IN AI CHANNELS)
     # ===========================
     if message.channel.id in ALLOWED_AI_CHANNELS:
         user = message.author
-        raw_msg = message.content.strip()
+        text = message.content.strip()
 
-        # Choose model based on role
         model = (
             AI_ADVANCED_MODEL
             if any(r.id == FINEST_MEMBER_ROLE for r in user.roles)
-            else AI_GENERAL_MODEL
+            else AI_GENERAL_MODELS[0]
         )
-
-        try:
-            reply = await ai_query(raw_msg, model=model)
-            await message.channel.send(f"**Sir**, {reply}")
-        except Exception as e:
-            print("[AI-ERROR]", e)
-            await message.channel.send("⚠️ Sorry sir, AI service is having a bad day. Try again shortly.")
-
-        # ===== AI LOG (INSIDE FUNCTION, NOT TOP-LEVEL) =====
-        try:
-            log_channel = bot.get_channel(FINEST_LOG_CHANNEL)
-            if log_channel:
-                await log_channel.send(
-                    f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {raw_msg}"
-                )
-        except Exception as e:
-            print("[LOG-ERROR]", e)
-
-    # ===========================
-    # FINAL FALLBACK → allow other commands
-    # ===========================
-    await bot.process_commands(message)
-# ========== AI CONFIG (Loads from environment) ==========
-import os
-import json
-
-AI_GENERAL_MODELS = json.loads(os.getenv("AI_GENERAL_MODELS", '["gpt-4o-mini"]'))
-AI_ADVANCED_MODEL = os.getenv("AI_ADVANCED_MODEL", "gpt-4o-mini")
-
-AI_GENERAL_CHANNELS = json.loads(os.getenv("AI_GENERAL_CHANNELS", "[]"))
-FINEST_MEMBER_ROLE = int(os.getenv("FINEST_MEMBER_ROLE", "0"))
-FINEST_LOG_CHANNEL = int(os.getenv("FINEST_LOG_CHANNEL", "0"))
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-
-# ========== AI REQUEST FUNCTION ==========
-async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
-    import aiohttp
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 500
-                }
-            ) as resp:
-                data = await resp.json()
-                return data["choices"][0]["message"]["content"]
-    except Exception as e:
-        return f"⚠️ Sorry sir, AI is offline. Error: {e}"
-
-
-# ========== AI CONFIG (Loads from environment) ==========
-import os
-import json
-
-AI_GENERAL_MODELS = json.loads(os.getenv("AI_GENERAL_MODELS", '["gpt-4o-mini"]'))
-AI_ADVANCED_MODEL = os.getenv("AI_ADVANCED_MODEL", "gpt-4o-mini")
-
-AI_GENERAL_CHANNELS = json.loads(os.getenv("AI_GENERAL_CHANNELS", "[]"))
-FINEST_MEMBER_ROLE = int(os.getenv("FINEST_MEMBER_ROLE", "0"))
-FINEST_LOG_CHANNEL = int(os.getenv("FINEST_LOG_CHANNEL", "0"))
-
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-
-# ========== AI REQUEST FUNCTION ==========
-async def ai_query(prompt: str, model: str = "gpt-4o-mini"):
-    import aiohttp
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 500
-                }
-            ) as resp:
-                data = await resp.json()
-                return data["choices"][0]["message"]["content"]
-    except Exception as e:
-        return f"⚠️ Sorry sir, AI is offline. Error: {e}"
-
-# ========== AI AUTO-REPLY (MESSAGE EVENT) ==========
-    # Auto AI reply only inside allowed channels
-    if message.channel.id in AI_GENERAL_CHANNELS:
-        user = message.author
-        text = message.content.strip()
-
-        # Premium model (Finest member)
-        if any(r.id == FINEST_MEMBER_ROLE for r in user.roles):
-            model = AI_ADVANCED_MODEL
-        else:
-            model = AI_GENERAL_MODELS[0]
 
         reply = await ai_query(text, model=model)
         await message.channel.send(f"**Sir**, {reply}")
 
-        # Logging
         log_ch = bot.get_channel(FINEST_LOG_CHANNEL)
         if log_ch:
-            await log_ch.send(f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {text}")
-            
- await bot.process_commands(message)
+            await log_ch.send(
+                f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {text}"
+            )
+        return
+
+    # ===========================
+    # REQUIRED FOR PREFIX COMMANDS
+    # ===========================
+    await bot.process_commands(message)
+
 #================== AUTO ROLE ON VOICE CHANNEL =================
 @bot.event
 async def on_voice_state_update(member, before, after):
