@@ -28,6 +28,11 @@ from datetime import datetime
 import requests
 from discord.ext.commands import has_role
 
+STORE_CHANNEL_ID = 1466027151978401929
+TICKET_CATEGORY_ID = 1466111437469651175
+ARCHIVE_CATEGORY_ID = 1464761039769042955
+STAFF_ROLE_ID = 1464249885669851360
+
 PACK_CATEGORIES = {
     "Standard Packs": [
         "Optimization Pack",
@@ -513,8 +518,16 @@ async def send_join_dm(member):
 # ================= EVENTS =================
 @bot.event
 async def on_ready():
-    print(f"✅ {bot.user} is online 🚀")
-    bot.add_view(CategoryView())
+    await tree.sync()
+    print("Bot online")
+
+    channel = bot.get_channel(STORE_CHANNEL_ID)
+    if channel:
+        await channel.send(
+            embed=finest_store_embed(),
+            view=CategoryView()
+        )
+
     update_status.start()
     for guild in bot.guilds:
         try:
@@ -1180,42 +1193,39 @@ class CategoryView(discord.ui.View):
         super().__init__(timeout=None)
 
     # ROW 0
-    @discord.ui.button(
-        label="Standard Packs",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
+    @discord.ui.button(label="Standard Packs", style=discord.ButtonStyle.secondary, row=0)
     async def standard(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            embed=pack_select_embed("Standard Packs"),
-            view=PackSelectView("Standard Packs"),
+            embed=pack_select_embed("standard"),
+            view=PackSelectView("standard"),
             ephemeral=True
         )
 
-    @discord.ui.button(
-        label="Pro & Premium",
-        style=discord.ButtonStyle.secondary,
-        row=0
-    )
+    @discord.ui.button(label="Pro & Premium", style=discord.ButtonStyle.secondary, row=0)
     async def pro(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            embed=pack_select_embed("Pro & Premium Packs"),
-            view=PackSelectView("Pro & Premium Packs"),
+            embed=pack_select_embed("pro"),
+            view=PackSelectView("pro"),
             ephemeral=True
         )
 
     # ROW 1
-    @discord.ui.button(
-        label="Ultimate Combo",
-        style=discord.ButtonStyle.secondary,
-        row=1
-    )
+    @discord.ui.button(label="Ultimate Combo", style=discord.ButtonStyle.secondary, row=1)
     async def ultimate(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            embed=pack_select_embed("Ultimate Combo"),
-            view=PackSelectView("Ultimate Combo"),
+            embed=pack_select_embed("ultimate"),
+            view=PackSelectView("ultimate"),
             ephemeral=True
         )
+
+    @discord.ui.button(label="Other Services", style=discord.ButtonStyle.secondary, row=1)
+    async def other(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("other"),
+            view=PackSelectView("other"),
+            ephemeral=True
+        )
+
 
     @discord.ui.button(
         label="Other Services",
@@ -1257,14 +1267,48 @@ class TicketConfirmView(discord.ui.View):
         self.pack_name = pack_name
 
     @discord.ui.button(
-        label="Confirm & Create",
-        style=discord.ButtonStyle.success
+    label="Confirm & Create",
+    style=discord.ButtonStyle.success
+)
+async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+    guild = interaction.guild
+    user = interaction.user
+
+    # 🚫 STEP 11 — DUPLICATE TICKET CHECK
+    for ch in guild.text_channels:
+        if ch.category and ch.category.id == TICKET_CATEGORY_ID:
+            if ch.name == f"ticket-{user.name.lower()}":
+                await interaction.response.send_message(
+                    f"❌ You already have an open ticket: {ch.mention}",
+                    ephemeral=True
+                )
+                return
+
+    category = discord.utils.get(
+        guild.categories,
+        id=TICKET_CATEGORY_ID
     )
-    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(
-            embed=device_select_embed(),
-            view=DeviceSelectView(self.pack_name)
-        )
+
+    channel = await guild.create_text_channel(
+        name=f"ticket-{user.name}",
+        category=category,
+        overwrites={
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            user: discord.PermissionOverwrite(view_channel=True, send_messages=True),
+            guild.get_role(STAFF_ROLE_ID): discord.PermissionOverwrite(view_channel=True)
+        }
+    )
+
+    await channel.send(
+        content=f"<@&{STAFF_ROLE_ID}>",
+        embed=device_select_embed(),
+        view=DeviceSelectView(self.pack_name)
+    )
+
+    await interaction.response.send_message(
+        f"✅ Ticket created: {channel.mention}",
+        ephemeral=True
+    )
 
     @discord.ui.button(
         label="Cancel",
