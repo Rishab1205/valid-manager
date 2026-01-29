@@ -1048,18 +1048,17 @@ def finest_store_embed():
         url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png"
     )
 
-    # SECTION 1 — STANDARD PACKS
+    # SECTION 1 — "STANDARD PACKS",
     embed.add_field(
-        name="<:vg9:1466347811170680862> STANDARD PACKS",
+        name=" <:vg9:1466347811170680862> STANDARD PACKS\n",
         value=(
-            "**<a:vga1:1466376555591897272> Optimization Pack**\n"
             "\u200b\n"
+            "**<a:vga1:1466376555591897272> Optimization Pack**\n\n"
             "<:vg11:1466368081042472961> Shutter Reduction\n"
             "<:vg11:1466368081042472961> Input delay fix, CPU & RAM optimization\n"
-            "<:vg11:1466368081042472961> Best power plan, unnecessary services disabled\n"
-            "\u200b\n"
-            "**<a:vga1:1466376555591897272> Sensi Packs**\n"
-            "\u200b\n"
+            "<:vg11:1466368081042472961> Best power plan, unnecessary services disabled\n\n"
+           
+            "**<a:vga1:1466376555591897272> Sensi Packs**\n\n"
             "<:vg11:1466368081042472961> Best X/Y sensitivity, DPI calculation\n"
             "<:vg11:1466368081042472961> Balanced sensi, low recoil tuning\n"
             "<:vg11:1466368081042472961> Mouse and Keyboard 0 Delay"
@@ -1071,25 +1070,24 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg2:1466347978745970841> Pro & Premium Packs",
         value=(
+           "\u200b\n"
             "**<a:vga1:1466376555591897272> Optimization Pro**\n"
-            "\u200b\n"
             "<:vg11:1466368081042472961> High FPS optimization, no lag guarantee\n"
-            "<:vg11:1466368081042472961> Advanced regedits & batch files\n"
-            "\u200b\n"
+            "<:vg11:1466368081042472961> Advanced regedits & batch files\n\n"
+            
             "**<a:vga1:1466376555591897272> Finest Sensi Pro**\n"
-            "\u200b\n"
             "<:vg11:1466368081042472961> Custom X/Y sensi, resolution & FPS tuning\n"
-            "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks"
+            "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks\n"
         ),
         inline=False
     )
 
-    # SECTION 3 — ULTIMATE COMBO
+    # SECTION 3 — ULTIMATE PACK
     embed.add_field(
-        name="<:vg1:1466348025910923470> Ultimate Combo",
+        name="<:vg1:1466348025910923470> Ultimate Combo\n\n",
         value=(
-            "**<a:vga1:1466376555591897272> Finest Plero Brazilia**\n"
             "\u200b\n"
+            "**<a:vga1:1466376555591897272> Finest Plero Brazilia**\n"
             "<:vg11:1466368081042472961> All-in-one FPS + sensi combo\n"
             "<:vg11:1466368081042472961> Advanced input tweaks\n"
             "<:vg11:1466368081042472961> Secret emulator for smoothness\n"
@@ -1102,12 +1100,10 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg8:1466347840056852621> OTHER SERVICES",
         value=(
+            "\u200b\n"
             "**<a:vga1:1466376555591897272> Discord Server Setup**\n"
-            "\u200b\n"
-            "<:vg11:1466368081042472961> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n"
-            "\u200b\n"
+            "<:vg11:1466368081042472961> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
             "**<a:vga1:1466376555591897272> Freefire Id's**\n"
-            "\u200b\n"
             "<:vg11:1466368081042472961> Starts from ₹999\n"
             "<:vg11:1466368081042472961> Buy via ticket"
         ),
@@ -1116,7 +1112,7 @@ def finest_store_embed():
 
     embed.set_footer(text="Finest Store • Performance is personal")
     return embed
-
+    
 class FinestStoreView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
