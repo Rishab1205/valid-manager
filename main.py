@@ -1048,10 +1048,9 @@ def finest_store_embed():
         url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png"
     )
 
-    # SECTION 1 — "STANDARD PACKS\n\n",
+    # SECTION 1 — "STANDARD PACKS",
     embed.add_field(
-        name=" <:vg9:1466347811170680862> STANDARD PACKS\\n",
-        
+        name=" <:vg9:1466347811170680862> STANDARD PACKS\n",
         value=(
             "**<a:vga1:1466376555591897272> Optimization Pack**\n\n"
             "<:vg11:1466368081042472961> Shutter Reduction\n"
@@ -1064,7 +1063,7 @@ def finest_store_embed():
             "<:vg11:1466368081042472961> Mouse and Keyboard 0 Delay"
         ),
         inline=False
-    )\n\n
+    )
 
     # SECTION 2 — PRO / PREMIUM PACKS
     embed.add_field(
@@ -1079,11 +1078,11 @@ def finest_store_embed():
             "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks\n"
         ),
         inline=False
-    )\n\n
+    )
 
     # SECTION 3 — ULTIMATE PACK
     embed.add_field(
-        name="<:vg1:1466348025910923470> Ultimate Combo",
+        name="<:vg1:1466348025910923470> Ultimate Combo\n\n",
         value=(
             "**<a:vga1:1466376555591897272> Finest Plero Brazilia**\n"
             "<:vg11:1466368081042472961> All-in-one FPS + sensi combo\n"
