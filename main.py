@@ -1052,7 +1052,7 @@ def finest_store_embed():
     embed.add_field(
         name=" <:vg9:1466347811170680862> STANDARD PACKS",
         value=(
-            "** Optimization Pack**\n"
+            "** <:m4x_ReplySingle:1215254311508902030> Optimization Pack**\n"
             "<:vgdot:1466358019280470188> Input delay fix, CPU & RAM optimization\n"
             "<:vgdot:1466358019280470188> Best power plan, unnecessary services disabled\n\n"
             
