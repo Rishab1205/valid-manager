@@ -860,34 +860,6 @@ async def ping(ctx):
 ALLOWED_AI_CHANNELS = {1214601102100791346, 1457708857777197066}
 AI_GENERAL_CHANNELS = ALLOWED_AI_CHANNELS  # Same thing
 
-    # ===========================
-    # CART COMMANDS
-    # ===========================
-    if content.startswith("add to cart"):
-        product = detect_product(content)
-        if not product:
-            return await message.channel.send("❌ Sir, product not found.")
-        user_carts.setdefault(user_id, []).append(product)
-        return await message.channel.send(f"🛒 Added **{product}** to your cart, sir.")
-
-    if content.startswith("remove from cart"):
-        product = detect_product(content)
-        if not product or product not in user_carts.get(user_id, []):
-            return await message.channel.send("❌ Sir, product not in cart.")
-        user_carts[user_id].remove(product)
-        return await message.channel.send(f"🗑 Removed **{product}** from your cart, sir.")
-
-    if content == "cart":
-        cart = user_carts.get(user_id, [])
-        if not cart:
-            return await message.channel.send("🛒 Your cart is empty, sir.")
-        total = sum(PRODUCTS[p]["price"] for p in cart)
-        items = "\n".join(f"• {p} — ₹{PRODUCTS[p]['price']}" for p in cart)
-        return await message.channel.send(f"🛒 **Your Cart:**\n{items}\n\n💰 **Total: ₹{total}**")
-
-    if content == "clearcart":
-        user_carts[user_id] = []
-        return await message.channel.send("♻️ Cart cleared, sir.")
 
     # ===========================
     # PRICE CHECK
