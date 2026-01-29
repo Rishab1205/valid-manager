@@ -1050,15 +1050,17 @@ def finest_store_embed():
 
     # SECTION 1 — STANDARD PACKS
     embed.add_field(
-        name=" <:vg9:1466347811170680862> STANDARD PACKS",
+        name=" <:vg9:1466347811170680862> STANDARD PACKS\n\n",
         value=(
-            "** <:m4x_ReplySingle:1215254311508902030> Optimization Pack**\n\n"
+            "** <:star~1:1466368081042472961> Optimization Pack**\n\n"
+            "<:vgdot:1466358019280470188> Shutter Reduction\n"
             "<:vgdot:1466358019280470188> Input delay fix, CPU & RAM optimization\n"
             "<:vgdot:1466358019280470188> Best power plan, unnecessary services disabled\n\n"
-            
+           
             "** <:m4x_ReplySingle:1215254311508902030> Sensi Packs**\n"
             "<:vgdot:1466358019280470188> Best X/Y sensitivity, DPI calculation\n"
-            "<:vgdot:1466358019280470188> Balanced sensi, low recoil tuning"
+            "<:vgdot:1466358019280470188> Balanced sensi, low recoil tuning\n"
+            "<:vgdot:1466358019280470188> Mouse and Keyboard 0 Delay"
         ),
         inline=False
     )
