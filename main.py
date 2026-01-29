@@ -1111,14 +1111,24 @@ class FinestStoreView(discord.ui.View):
         super().__init__(timeout=None)
 
     # ROW 1
-    @discord.ui.button(label="Optimization" emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(
+        label="Optimization",
+        emoji="⚙️",
+        style=discord.ButtonStyle.primary,
+        row=0
+    )
     async def opt(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
             "Optimization Pack selected.\nPlease continue to create ticket.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Sensi Pack" emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(
+        label="Sensi Pack",
+        emoji="🎯",
+        style=discord.ButtonStyle.primary,
+        row=0
+    )
     async def sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
             "Sensi Pack selected.\nPlease continue to create ticket.",
@@ -1126,14 +1136,24 @@ class FinestStoreView(discord.ui.View):
         )
 
     # ROW 2
-    @discord.ui.button(label="Finest Sensi Pro" emoji="⚙️", style=discord.ButtonStyle.primary, row=1)
+    @discord.ui.button(
+        label="Finest Sensi Pro",
+        emoji="🔖",
+        style=discord.ButtonStyle.primary,
+        row=1
+    )
     async def sensi_pro(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
             "Finest Sensi Pro selected.\nPlease continue to create ticket.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Finest Plero Brazilia" emoji="⚙️", style=discord.ButtonStyle.primary, row=1)
+    @discord.ui.button(
+        label="Finest Plero Brazilia",
+        emoji="⛩",
+        style=discord.ButtonStyle.primary,
+        row=1
+    )
     async def plero(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
             "Finest Plero Brazilia selected.\nPlease continue to create ticket.",
