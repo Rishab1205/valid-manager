@@ -1054,19 +1054,19 @@ def finest_store_embed():
         
         value=(
             "** Optimization Pack**\n"
-            "• Input delay fix, CPU & RAM optimization\n"
-            "• Best power plan, unnecessary services disabled\n\n"
-            "**Sensi Pack**\n"
-            "• Best X/Y sensitivity, DPI calculation\n"
-            "• Balanced sensi, low recoil tuning"
+            <:Purple_dot:1264798542548176906> Input delay fix, CPU & RAM optimization\n"
+            <:Purple_dot:1264798542548176906> Best power plan, unnecessary services disabled\n\n"
+            <:Purple_dot:1264798542548176906> Sensi Pack**\n"
+            <:Purple_dot:1264798542548176906> Best X/Y sensitivity, DPI calculation\n"
+            <:Purple_dot:1264798542548176906> Balanced sensi, low recoil tuning"
         ),
         inline=False
     )
 
     # SECTION 2 — PRO / PREMIUM PACKS
-    
     embed.add_field(
-        name="🛍️ Pro & Premium Packs",
+        name="<:vg2:1466347978745970841> Pro & Premium Packs",
+        
         value=(
             "**Optimization Pro**\n"
             "• High FPS optimization, no lag guarantee\n"
@@ -1079,9 +1079,9 @@ def finest_store_embed():
     )
 
     # SECTION 3 — ULTIMATE PACK
-    
     embed.add_field(
-        name="🛍️ Ultimate Combo",
+        name="<:vg1:1466348025910923470> Ultimate Combo",
+        
         value=(
             "**Finest Plero Brazilia**\n"
             "• All-in-one FPS + sensi combo\n"
@@ -1095,7 +1095,8 @@ def finest_store_embed():
     # SECTION 4 — OTHER SERVICES
     
     embed.add_field(
-        name="⏳ Other Services",
+        name="<:ccad0bd101c82a678c8089572ad4e766:1215199208555151411> Other Services",
+        
         value=(
             "**Discord Server Setup**\n"
             "• Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
