@@ -1043,11 +1043,7 @@ def finest_store_embed():
         color=0x2B2D31
     )
 
-    # IMAGE AT TOP
-    embed.set_image(
-        url="https://cdn.discordapp.com/attachments/1166295699290333194/1466167278067515636/ChatGPT_Image_Jan_28_2026_03_51_28_PM.png"
-    )
-
+    
     # SECTION 1 — "STANDARD PACKS",
     embed.add_field(
         name=" <:vg9:1466347811170680862> STANDARD PACKS\n",
@@ -1101,7 +1097,7 @@ def finest_store_embed():
     
     # SECTION 4 — OTHER SERVICES
     embed.add_field(
-        name="<:vg8:1466347840056852621> OTHER SERVICES",
+        name="<:vg7:1466347876580983032> OTHER SERVICES",
         value=(
             "\u200b\n"
             "**<a:vga1:1466376555591897272> Discord Server Setup**\n"
