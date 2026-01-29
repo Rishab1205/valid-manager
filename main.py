@@ -468,7 +468,11 @@ async def process_member(member):
 
     guild = member.guild
     data = dict(zip(header, row))
-    status = data.get("Status", "").strip().lower()
+    raw_status = str(data.get("Status", "")).lower()
+
+    PAID_KEYWORDS = ("paid", "success", "completed", "done")
+
+    status = any(word in raw_status for word in PAID_KEYWORDS)
 
     # Assign role if paid
     member_role = guild.get_role(MEMBER_ROLE_ID)
@@ -484,7 +488,7 @@ async def process_member(member):
     await update_profile_sheet(member, row)
 
     # Create ticket + DM for paid
-    if status in ["paid", "payment received", "completed", "success"]:
+    if status:
         ticket = await create_ticket(member, header, row)
         if ticket:
             await send_payment_dm(member, ticket)
@@ -618,18 +622,40 @@ async def uptime_cmd(interaction: Interaction):
     await interaction.response.send_message(f"⏳ Bot Uptime: `{delta}`")
 
 @tree.command(name="refresh", description="Sync your purchase & unlock access")
-async def refresh_cmd(interaction: Interaction):
+async def refresh_cmd(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
-    member = interaction.user
-    ticket = await process_member(member)
+    try:
+        member = interaction.user
 
-    if ticket:
-        await interaction.followup.send("🔄 Synced successfully sir! Ticket + DM sent.", ephemeral=True)
-    else:
-        await interaction.followup.send("⚠️ No paid purchases found sir.", ephemeral=True)
+        ticket = await asyncio.wait_for(
+            process_member(member),
+            timeout=10
+        )
 
-from sheet import get_profile
+        if ticket:
+            await interaction.followup.send(
+                "✅ Purchase synced successfully.\n🎫 Ticket created & DM sent.",
+                ephemeral=True
+            )
+        else:
+            await interaction.followup.send(
+                "⚠️ No paid purchase found for your account.",
+                ephemeral=True
+            )
+
+    except asyncio.TimeoutError:
+        await interaction.followup.send(
+            "⚠️ Sync timed out. Please try again in a moment.",
+            ephemeral=True
+        )
+
+    except Exception as e:
+        print("[REFRESH ERROR]", e)
+        await interaction.followup.send(
+            "❌ Internal error during refresh. Staff has been notified.",
+            ephemeral=True
+        )
 
 @tree.command(name="profile", description="View your Finest profile")
 async def profile_cmd(interaction: discord.Interaction):
