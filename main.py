@@ -1053,11 +1053,11 @@ def finest_store_embed():
         name=" <:vg9:1466347811170680862> Standard Packs",
         value=(
             "** Optimization Pack**\n"
-            <:Purple_dot:1264798542548176906> Input delay fix, CPU & RAM optimization\n"
-            <:Purple_dot:1264798542548176906> Best power plan, unnecessary services disabled\n\n"
-            <:Purple_dot:1264798542548176906> Sensi Pack**\n"
-            <:Purple_dot:1264798542548176906> Best X/Y sensitivity, DPI calculation\n"
-            <:Purple_dot:1264798542548176906> Balanced sensi, low recoil tuning"
+            "<:Purple_dot:1264798542548176906> Input delay fix, CPU & RAM optimization\n"
+            "<:Purple_dot:1264798542548176906> Best power plan, unnecessary services disabled\n\n"
+            "<:Purple_dot:1264798542548176906> Sensi Pack**\n"
+            "<:Purple_dot:1264798542548176906> Best X/Y sensitivity, DPI calculation\n"
+            "<:Purple_dot:1264798542548176906> Balanced sensi, low recoil tuning"
         ),
         inline=False
     )
