@@ -569,23 +569,14 @@ async def on_member_join(member):
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
 async def update_status():
-    if not bot.guilds:
-        return
-
+    if not bot.guilds: return
     guild = bot.guilds[0]
-
-    online = sum(
-        1 for m in guild.members
-        if m.status != discord.Status.offline
-    )
-
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
-            name=f"{online} online | Finest Store"
+            name=f"{guild.member_count} users | Valid Subs"
         )
     )
-
 # ================= LOCK SERVER =================
 async def lock_server(guild):
     global server_locked
