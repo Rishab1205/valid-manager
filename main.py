@@ -1130,61 +1130,58 @@ class CategoryView(discord.ui.View):
         super().__init__(timeout=None)
 
     # ROW 0
-@discord.ui.button(
-    label="Standard Packs",
-    emoji="<:vg3:1466347955593285787>",
-    style=discord.ButtonStyle.secondary,
-    row=0
-)
-async def standard(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.send_message(
-        embed=pack_select_embed("standard"),
-        view=PackSelectView("standard"),
-        ephemeral=True
+    @discord.ui.button(
+        label="Standard Packs",
+        emoji="<:vg3:1466347955593285787>",
+        style=discord.ButtonStyle.secondary,
+        row=0
     )
+    async def standard(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("standard"),
+            view=PackSelectView("standard"),
+            ephemeral=True
+        )
 
-
-@discord.ui.button(
-    label="Pro & Premium",
-    emoji="<:vg6:1466347893408530492>",
-    style=discord.ButtonStyle.secondary,
-    row=0
-)
-async def pro(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.send_message(
-        embed=pack_select_embed("pro"),
-        view=PackSelectView("pro"),
-        ephemeral=True
+    @discord.ui.button(
+        label="Pro & Premium",
+        emoji="<:vg6:1466347893408530492>",
+        style=discord.ButtonStyle.secondary,
+        row=0
     )
+    async def pro(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("pro"),
+            view=PackSelectView("pro"),
+            ephemeral=True
+        )
 
-
-# ROW 1
-@discord.ui.button(
-    label="Ultimate Combo",
-    emoji="<:vg4:1466347938027405446>",
-    style=discord.ButtonStyle.secondary,
-    row=1
-)
-async def ultimate(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.send_message(
-        embed=pack_select_embed("ultimate"),
-        view=PackSelectView("ultimate"),
-        ephemeral=True
+    # ROW 1
+    @discord.ui.button(
+        label="Ultimate Combo",
+        emoji="<:vg4:1466347938027405446>",
+        style=discord.ButtonStyle.secondary,
+        row=1
     )
+    async def ultimate(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("ultimate"),
+            view=PackSelectView("ultimate"),
+            ephemeral=True
+        )
 
-
-@discord.ui.button(
-    label="Other Services",
-    emoji="<:vg10:1466347773527068895>",
-    style=discord.ButtonStyle.secondary,
-    row=1
-)
-async def other(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.send_message(
-        embed=pack_select_embed("other"),
-        view=PackSelectView("other"),
-        ephemeral=True
+    @discord.ui.button(
+        label="Other Services",
+        emoji="<:vg10:1466347773527068895>",
+        style=discord.ButtonStyle.secondary,
+        row=1
     )
+    async def other(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=pack_select_embed("other"),
+            view=PackSelectView("other"),
+            ephemeral=True
+        )
 
         
 class PackSelectView(discord.ui.View):
