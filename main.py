@@ -1050,14 +1050,15 @@ def finest_store_embed():
 
     # SECTION 1 — STANDARD PACKS
     embed.add_field(
-        name=" <:vg9:1466347811170680862> Standard Packs",
+        name=" <:vg9:1466347811170680862> STANDARD PACKS",
         value=(
             "** Optimization Pack**\n"
-            "<:Purple_dot:1264798542548176906> Input delay fix, CPU & RAM optimization\n"
-            "<:Purple_dot:1264798542548176906> Best power plan, unnecessary services disabled\n\n"
-            "<:Purple_dot:1264798542548176906> Sensi Pack**\n"
-            "<:Purple_dot:1264798542548176906> Best X/Y sensitivity, DPI calculation\n"
-            "<:Purple_dot:1264798542548176906> Balanced sensi, low recoil tuning"
+            "<:vgdot:1466358019280470188> Input delay fix, CPU & RAM optimization\n"
+            "<:vgdot:1466358019280470188> Best power plan, unnecessary services disabled\n\n"
+            
+            " SENSI PACK**\n"
+            "<:vgdot:1466358019280470188> Best X/Y sensitivity, DPI calculation\n"
+            "<:vgdot:1466358019280470188> Balanced sensi, low recoil tuning"
         ),
         inline=False
     )
@@ -1067,11 +1068,12 @@ def finest_store_embed():
         name="<:vg2:1466347978745970841> Pro & Premium Packs",
         value=(
             "**Optimization Pro**\n"
-            "• High FPS optimization, no lag guarantee\n"
-            "• Advanced regedits & batch files\n\n"
-            "**Finest Sensi Pro**\n"
-            "• Custom X/Y sensi, resolution & FPS tuning\n"
-            "• Low recoil configs & aim assist tweaks"
+            "<:vgdot:1466358019280470188> High FPS optimization, no lag guarantee\n"
+            "<:vgdot:1466358019280470188> Advanced regedits & batch files\n\n"
+            
+            "**FINEST SENSI PRO**\n"
+            "<:vgdot:1466358019280470188> Custom X/Y sensi, resolution & FPS tuning\n"
+            "<:vgdot:1466358019280470188> Low recoil configs & aim assist tweaks"
         ),
         inline=False
     )
@@ -1081,23 +1083,23 @@ def finest_store_embed():
         name="<:vg1:1466348025910923470> Ultimate Combo",
         value=(
             "**Finest Plero Brazilia**\n"
-            "• All-in-one FPS + sensi combo\n"
-            "• Advanced input tweaks\n"
-            "• Secret emulator for smoothness\n"
-            "• Best regedits for headshots"
+            "<:vgdot:1466358019280470188> All-in-one FPS + sensi combo\n"
+            "<:vgdot:1466358019280470188> Advanced input tweaks\n"
+            "<:vgdot:1466358019280470188> Secret emulator for smoothness\n"
+            "<:vgdot:1466358019280470188> Best regedits for headshots"
         ),
         inline=False
     )
 
     # SECTION 4 — OTHER SERVICES
     embed.add_field(
-        name="<:ccad0bd101c82a678c8089572ad4e766:1215199208555151411> Other Services",
+        name="<:ccad0bd101c82a678c8089572ad4e766:1215199208555151411> OTHER SERVICES",
         value=(
             "**Discord Server Setup**\n"
-            "• Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
-            "**Freefire IDs**\n"
-            "• Starts from ₹999\n"
-            "• Buy via ticket"
+            "<:vgdot:1466358019280470188> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
+            "**FREEFIRE ID'S**\n"
+            "<:vgdot:1466358019280470188> Starts from ₹999\n"
+            "<:vgdot:1466358019280470188> Buy via ticket"
         ),
         inline=False
     )
