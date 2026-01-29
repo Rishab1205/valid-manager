@@ -1053,15 +1053,15 @@ def finest_store_embed():
         name=" <:vg9:1466347811170680862> STANDARD PACKS\n\n",
         
         value=(
-            "**<:vg11:1466368081042472961> Optimization Pack**\n\n"
-            "<:vgdot:1466358019280470188> Shutter Reduction\n"
-            "<:vgdot:1466358019280470188> Input delay fix, CPU & RAM optimization\n"
-            "<:vgdot:1466358019280470188> Best power plan, unnecessary services disabled\n\n"
+            "**<:vga1:1466376555591897272> Optimization Pack**\n\n"
+            "<:vg11:1466368081042472961> Shutter Reduction\n"
+            "<:vg11:1466368081042472961> Input delay fix, CPU & RAM optimization\n"
+            "<:vg11:1466368081042472961> Best power plan, unnecessary services disabled\n\n"
            
-            "**<:vg11:1466368081042472961> Sensi Packs**\n\n"
-            "<:vgdot:1466358019280470188> Best X/Y sensitivity, DPI calculation\n"
-            "<:vgdot:1466358019280470188> Balanced sensi, low recoil tuning\n"
-            "<:vgdot:1466358019280470188> Mouse and Keyboard 0 Delay"
+            "**<:vga1:1466376555591897272> Sensi Packs**\n\n"
+            "<:vg11:1466368081042472961> Best X/Y sensitivity, DPI calculation\n"
+            "<:vg11:1466368081042472961> Balanced sensi, low recoil tuning\n"
+            "<:vg11:1466368081042472961> Mouse and Keyboard 0 Delay"
         ),
         inline=False
     )
@@ -1070,13 +1070,13 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg2:1466347978745970841> Pro & Premium Packs",
         value=(
-            "**<:vg11:1466368081042472961> Optimization Pro**\n"
-            "<:vgdot:1466358019280470188> High FPS optimization, no lag guarantee\n"
-            "<:vgdot:1466358019280470188> Advanced regedits & batch files\n\n"
+            "**<:vga1:1466376555591897272> Optimization Pro**\n"
+            "<:vg11:1466368081042472961> High FPS optimization, no lag guarantee\n"
+            "<:vg11:1466368081042472961> Advanced regedits & batch files\n\n"
             
-            "**<:vg11:1466368081042472961> Finest Sensi Pro**\n"
-            "<:vgdot:1466358019280470188> Custom X/Y sensi, resolution & FPS tuning\n"
-            "<:vgdot:1466358019280470188> Low recoil configs & aim assist tweaks"
+            "**<:vga1:1466376555591897272> Finest Sensi Pro**\n"
+            "<:vg11:1466368081042472961> Custom X/Y sensi, resolution & FPS tuning\n"
+            "<:vg11:1466368081042472961> Low recoil configs & aim assist tweaks"
         ),
         inline=False
     )
@@ -1085,11 +1085,11 @@ def finest_store_embed():
     embed.add_field(
         name="<:vg1:1466348025910923470> Ultimate Combo",
         value=(
-            "**<:vg11:1466368081042472961> Finest Plero Brazilia**\n"
-            "<:vgdot:1466358019280470188> All-in-one FPS + sensi combo\n"
-            "<:vgdot:1466358019280470188> Advanced input tweaks\n"
-            "<:vgdot:1466358019280470188> Secret emulator for smoothness\n"
-            "<:vgdot:1466358019280470188> Best regedits for headshots"
+            "**<:vga1:1466376555591897272> Finest Plero Brazilia**\n"
+            "<:vg11:1466368081042472961> All-in-one FPS + sensi combo\n"
+            "<:vg11:1466368081042472961> Advanced input tweaks\n"
+            "<:vg11:1466368081042472961> Secret emulator for smoothness\n"
+            "<:vg11:1466368081042472961> Best regedits for headshots"
         ),
         inline=False
     )
@@ -1098,11 +1098,11 @@ def finest_store_embed():
     embed.add_field(
         name="<:ccad0bd101c82a678c8089572ad4e766:1215199208555151411> OTHER SERVICES",
         value=(
-            "**<:vg11:1466368081042472961> Discord Server Setup**\n"
-            "<:vgdot:1466358019280470188> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
-            "**<:vg11:1466368081042472961> Freefire Id's**\n"
-            "<:vgdot:1466358019280470188> Starts from ₹999\n"
-            "<:vgdot:1466358019280470188> Buy via ticket"
+            "**<:vga1:1466376555591897272> Discord Server Setup**\n"
+            "<:vg11:1466368081042472961> Basic: ₹399 | Pro: ₹799 | Finest: ₹1099\n\n"
+            "**<:vga1:1466376555591897272> Freefire Id's**\n"
+            "<:vg11:1466368081042472961> Starts from ₹999\n"
+            "<:vg11:1466368081042472961> Buy via ticket"
         ),
         inline=False
     )
