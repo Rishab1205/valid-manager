@@ -1098,14 +1098,14 @@ def finest_store_embed():
         value=(
             "• All-in-One Tweak Set\n"
             "• FPS + Sensi Combo\n"
-            "• Advanced Input Tweaks
+            "• Advanced Input Tweaks\n"
             "• Secret Emulator for Smoothness\n"
             "• Best Regedits for Headshots\n"
             "• Softwares for Aim & FPS\n"
         ),
         inline=False
     )
-    
+
     embed.add_field(
         name="⚙️ Self made Discord Server ",
         value=(         
@@ -1139,40 +1139,38 @@ class FinestStoreView(discord.ui.View):
         super().__init__(timeout=None)
 
     # ROW 1
-    @discord.ui.button(label=" Optimization", emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Optimization", emoji="⚙️", style=discord.ButtonStyle.primary, row=0)
     async def opt(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
             "🎟️ **Optimization selected**\nTicket will be created.",
             ephemeral=True
         )
 
-    @discord.ui.button(label="Sensi pack", emoji="🎯", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Sensi Pack", emoji="🎯", style=discord.ButtonStyle.primary, row=0)
     async def sensi(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "🎟️ **Sensi pack selected**\nTicket will be created.",
+            "🎟️ **Sensi Pack selected**\nTicket will be created.",
             ephemeral=True
         )
 
     # ROW 2
-    @discord.ui.button(label="Finestt Sensi pro", emoji="🔖", style=discord.ButtonStyle.success, row=1)
-    async def both(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label="Finest Sensi Pro", emoji="🔖", style=discord.ButtonStyle.success, row=1)
+    async def sensi_pro(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "🔖 **Finestt Sensi pro**\nTicket will be created.",
+            "🔖 **Finest Sensi Pro selected**\nTicket will be created.",
             ephemeral=True
         )
-        
-    # ROW 3
+
     @discord.ui.button(label="Finest Plero Brazilia", emoji="⛩", style=discord.ButtonStyle.success, row=1)
-    async def both(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def plero(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(
-            "⛩ **Finestt Sensi pro**\nTicket will be created.",
+            "⛩ **Finest Plero Brazilia selected**\nTicket will be created.",
             ephemeral=True
         )
-        
+
     @discord.ui.button(label="Close", emoji="❌", style=discord.ButtonStyle.danger, row=1)
     async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.message.delete()
-
 
 # ================= START =================
 keep_alive()
