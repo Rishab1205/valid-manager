@@ -476,7 +476,7 @@ async def process_member(member):
 
     # Assign role if paid
     member_role = guild.get_role(MEMBER_ROLE_ID)
-    if status == "PAID" and member_role:
+    if status and member_role:
         try:
             await member.add_roles(member_role)
         except:
