@@ -621,39 +621,21 @@ async def uptime_cmd(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
     await interaction.response.send_message(f"⏳ Bot Uptime: `{delta}`")
 
-@tree.command(name="refresh", description="Sync your purchase & unlock access")
-async def refresh_cmd(interaction: discord.Interaction):
+@@tree.command(name="refresh", description="Sync your purchase & unlock access")
+async def refresh_cmd(interaction: Interaction):
     await interaction.response.defer(ephemeral=True)
 
-    try:
-        member = interaction.user
+    member = interaction.user
+    ticket = await process_member(member)
 
-        ticket = await asyncio.wait_for(
-            process_member(member),
-            timeout=10
-        )
-
-        if ticket:
-            await interaction.followup.send(
-                "✅ Purchase synced successfully.\n🎫 Ticket created & DM sent.",
-                ephemeral=True
-            )
-        else:
-            await interaction.followup.send(
-                "⚠️ No paid purchase found for your account.",
-                ephemeral=True
-            )
-
-    except asyncio.TimeoutError:
+    if ticket:
         await interaction.followup.send(
-            "⚠️ Sync timed out. Please try again in a moment.",
+            "✅ Purchase synced!\nRole assigned, ticket created & DM sent.",
             ephemeral=True
         )
-
-    except Exception as e:
-        print("[REFRESH ERROR]", e)
+    else:
         await interaction.followup.send(
-            "❌ Internal error during refresh. Staff has been notified.",
+            "❌ No paid record found yet.\nIf you already paid, wait 1–2 mins and try again.",
             ephemeral=True
         )
 
@@ -997,8 +979,13 @@ async def on_message(message):
             else AI_GENERAL_MODELS[0]
         )
 
-        reply = await ai_query(text, model=model)
-        await message.channel.send(f"**Sir**, {reply}")
+        try:
+           reply = await ai_query(text, model=model)
+           await message.channel.send(f"**Sir**, {reply}")
+       except Exception as e:
+           print("[AI ERROR]", e)
+           await message.channel.send("⚠️ AI is busy right now, sir.")
+
 
         log_ch = bot.get_channel(FINEST_LOG_CHANNEL)
         if log_ch:
