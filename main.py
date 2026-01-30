@@ -480,6 +480,7 @@ async def send_payment_dm(member, ticket_channel):
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
     if not row_index:
+        print("[PROCESS] No sheet record for", member.id)
         return None
 
     guild = member.guild
@@ -487,32 +488,39 @@ async def process_member(member):
     raw_status = str(data.get("Status", "")).lower()
 
     PAID_KEYWORDS = ("paid", "success", "completed", "done")
+    is_paid = any(word in raw_status for word in PAID_KEYWORDS)
 
-    status = any(word in raw_status for word in PAID_KEYWORDS)
+    # ✅ ROLE ASSIGN
+    if is_paid:
+        role = guild.get_role(MEMBER_ROLE_ID)
+        if role and role not in member.roles:
+            try:
+                await member.add_roles(role)
+                print("[ROLE] Assigned paid role to", member.name)
+            except Exception as e:
+                print("[ROLE ERROR]", e)
 
-    # Assign role if paid
-    member_role = guild.get_role(MEMBER_ROLE_ID)
-    if status and member_role:
+    # ✅ UPDATE SHEET (THIS IS STEP 2 — INSIDE FUNCTION)
+    try:
+        update_role_assigned(row_index)
+        from sheet import update_profile_sheet
+        await update_profile_sheet(member, row)
+        print("[SHEET] Updated successfully")
+    except Exception as e:
+        print("[SHEET ERROR]", e)
+
+    # ✅ TICKET + DM ONLY IF PAID
+    if is_paid:
         try:
-            await member.add_roles(member_role)
-        except:
-            print("[ROLE ERROR] Failed to assign paid role.")
+            ticket = await create_ticket(member, header, row)
+            if ticket:
+                await send_payment_dm(member, ticket)
+                print("[FLOW] Ticket + DM done")
+            return ticket
+        except Exception as e:
+            print("[TICKET/DM ERROR]", e)
 
-   # ================= SAFE SHEET UPDATE (STEP 2 FIX) =================
-try:
-    update_role_assigned(row_index)
-    from sheet import update_profile_sheet
-    await update_profile_sheet(member, row)
-except Exception as e:
-    print("[SHEET ERROR]", e)
-
-# ================= CREATE TICKET + SEND DM =================
-if status:
-    ticket = await create_ticket(member, header, row)
-    if ticket:
-        await send_payment_dm(member, ticket)
-    return ticket
-
+    return None
 
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
