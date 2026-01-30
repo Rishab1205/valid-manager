@@ -518,40 +518,49 @@ async def send_payment_dm(member, ticket_channel):
         
 # ================= ROLE + ACCESS LOGIC =================
 async def process_member(member):
-    row_index, header, row = find_user_row(str(member.id))
-    if not row_index:
+    try:
+        result = find_user_row(str(member.id))
+        if not result:
+            print("❌ No sheet row found yet for", member.id)
+            return None
+
+        row_index, header, row = result
+        data = dict(zip(header, row))
+
+        raw_status = str(data.get("Status", "")).strip().lower()
+        status = raw_status in ("paid", "success", "completed", "done")
+
+        guild = member.guild
+        paid_role = guild.get_role(FINEST_MEMBER_ROLE)
+
+        # ================= ROLE ASSIGN =================
+        if status and paid_role and paid_role not in member.roles:
+            await member.add_roles(paid_role)
+            print("✅ Finest role assigned")
+
+        # ================= SHEET UPDATE (NON-BLOCKING) =================
+        try:
+            update_role_assigned(row_index)
+            from sheet import update_profile_sheet
+            await update_profile_sheet(member, row)
+        except Exception as e:
+            print("[SHEET ERROR]", e)
+
+        # ================= TICKET + DM =================
+        if status:
+            ticket = await create_ticket(member, header, row)
+            if ticket:
+                await send_payment_dm(member, ticket)
+                print("✅ Ticket + DM sent")
+                return ticket
+
+        print("❌ Status not paid yet:", raw_status)
         return None
 
-    guild = member.guild
-    data = dict(zip(header, row))
-    raw_status = str(data.get("Status", "")).lower()
-
-    PAID_KEYWORDS = ("paid", "success", "completed", "done")
-    status = any(word in raw_status for word in PAID_KEYWORDS)
-
-    # ================= ROLE ASSIGN =================
-    paid_role = guild.get_role(FINEST_MEMBER_ROLE)
-    if status and paid_role:
-        await member.add_roles(paid_role)
-        print("✅ Paid role assigned") 
-        
-    # ================= STEP 2 (THIS IS IT) =================
-    try:
-        update_role_assigned(row_index)
-        from sheet import update_profile_sheet
-        await update_profile_sheet(member, row)
     except Exception as e:
-        print("[SHEET ERROR]", e)
+        print("🔥 process_member fatal error:", repr(e))
+        return None
 
-    # ================= TICKET + DM =================
-    if status:
-        ticket = await create_ticket(member, header, row)
-        if ticket:
-            await send_payment_dm(member, ticket)
-        return ticket
-
-    return None
-    
 # ================= PAID PACK AUTO-DETECT (NEW USERS) =================
 async def delayed_process_member(member):
     await asyncio.sleep(8)  # allow Google Sheet to sync
