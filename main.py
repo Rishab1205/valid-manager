@@ -587,9 +587,9 @@ async def send_join_dm(member):
         )
         embed.set_footer(text="VALID DC • Established for serious players")
         await member.send(embed=embed)
-  except Exception as e:
-    print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
 
+    except Exception as e:
+        print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
 === EVENTS =================
 @bot.event
 async def on_ready():
