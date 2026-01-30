@@ -524,7 +524,7 @@ async def send_join_dm(member):
         embed = discord.Embed(
             title="<:vg12:1466375282154803220> Welcome to VALID DC",
             description=(
-                f"Hey **{member.name}**, welcome aboard! <:Discord_animated_logo:1109330997230719076>\n\n"
+                f"Hey **{member.name}**, welcome aboard! <:vg12:1466375282154803220>\n\n"
                 "You're now part of a community built for gamers who respect:\n"
                 "• Performance\n"
                 "• Discipline\n"
@@ -532,7 +532,7 @@ async def send_join_dm(member):
                 "**Useful Areas**\n"
                 "<:bookrules:1069318021543383161> Main Chat — `#chat`\n"
                 "⚙ Support — Open ticket anytime\n\n"
-                "If you ever need help — staff are one ticket away ❤️"
+                "If you ever need help — staff are one ticket away <:VG99:1466746881387270246>"
             ),
             color=0x2B2D31
         )
