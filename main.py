@@ -591,7 +591,6 @@ if str(member.id) in freeClaimUsers:
 
     # 2️⃣ Send Drive link in Discord channel
     channel = bot.get_channel(FREEPACK_CHANNEL_ID)
-
     if channel:
         await channel.send(
             f"🎁 **Free Pack Unlocked!**\n"
