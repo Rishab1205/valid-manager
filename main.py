@@ -981,12 +981,11 @@ async def on_message(message):
         )
 
         try:
-           reply = await ai_query(text, model=model)
-           await message.channel.send(f"**Sir**, {reply}")
-       except Exception as e:
-           print("[AI ERROR]", e)
-           await message.channel.send("⚠️ AI is busy right now, sir.")
-
+            reply = await ai_query(text, model=model)
+            await message.channel.send(f"**Sir**, {reply}")
+        except Exception as e:
+            print("[AI ERROR]", e)
+            await message.channel.send("⚠️ AI is busy right now, sir.")
 
         log_ch = bot.get_channel(FINEST_LOG_CHANNEL)
         if log_ch:
@@ -994,7 +993,7 @@ async def on_message(message):
                 f"[AI LOG] `{user}` in <#{message.channel.id}> said:\n> {text}"
             )
         return
-
+        
     # ===========================
     # REQUIRED FOR PREFIX COMMANDS
     # ===========================
