@@ -47,7 +47,7 @@ client = gspread.authorize(creds)
 
 async def is_freepack_user(discord_id):
     try:
-        sheet = client.open_by_key(SHEET_ID).sheet1  # ✅ Sheet 1
+        sheet = client.open_by_key(SHEET_ID).sheet1
         rows = sheet.get_all_records()
 
         for row in rows:
@@ -56,7 +56,6 @@ async def is_freepack_user(discord_id):
                 and str(row.get("Packs")).upper().strip() == "FREE PACK"
             ):
                 return True
-
     except Exception as e:
         print("[FREEPACK SHEET ERROR]", e)
 
@@ -595,21 +594,6 @@ async def on_ready():
             print(f"🔗 Synced slash commands to → {guild.name}")
         except Exception as e:
             print(f"❌ Sync failed for {guild.name}: {e}")
-
-async def is_freepack_user(discord_id):
-    try:
-        await authSheets()
-        await doc.loadInfo()
-        sheet = doc.sheetsByIndex[0]
-
-        rows = await sheet.getRows()
-        for row in rows:
-            if row.get("Discord ID") == str(discord_id) and row.get("Product") == "FREE PACK":
-                return True
-    except Exception as e:
-        print("[FREEPACK SHEET ERROR]", e)
-
-    return False
 
 @bot.event
 async def on_member_join(member):
