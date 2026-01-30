@@ -488,16 +488,34 @@ async def send_payment_dm(member, ticket_channel):
     try:
         embed = discord.Embed(
             title="<:vg12:1466375282154803220> Payment Confirmed!",
-            description=f"Hey **{member.name}** <a:kami_crown:1214643796671733780>\nYour purchase was successful!",
+            description=(
+                f"Hey **{member.name}** <a:kami_crown:1214643796671733780>\n"
+                "Your purchase was successful!"
+            ),
             color=0x2ECC71
         )
-        embed.add_field(name="📁 Ticket", value=f"{ticket_channel.mention}", inline=False)
-        embed.add_field(name="💳 Next Step", value=f"Upload screenshot in <#{PAYOUT_CHANNEL_ID}>", inline=False)
-        embed.set_footer(text="✨ Thanks for choosing FINEST — Performance is personal")
+
+        embed.add_field(
+            name="📁 Ticket",
+            value=ticket_channel.mention,
+            inline=False
+        )
+
+        embed.add_field(
+            name="💳 Next Step",
+            value=f"Upload screenshot in <#{PAYOUT_CHANNEL_ID}>",
+            inline=False
+        )
+
+        embed.set_footer(
+            text="✨ Thanks for choosing FINEST — Performance is personal"
+        )
+
         await member.send(embed=embed)
-   except Exception as e:
-    print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
-)
+
+    except Exception as e:
+        print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
+
 # ================= ROLE + ACCESS LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
