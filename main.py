@@ -515,7 +515,7 @@ async def send_payment_dm(member, ticket_channel):
 
     except Exception as e:
         print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
-
+        
 # ================= ROLE + ACCESS LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
@@ -585,12 +585,16 @@ async def send_join_dm(member):
             ),
             color=0x2B2D31
         )
-        embed.set_footer(text="VALID DC • Established for serious players")
+
+        embed.set_footer(
+            text="VALID DC • Established for serious players"
+        )
+
         await member.send(embed=embed)
 
     except Exception as e:
         print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
-        
+
 ================= EVENTS =================
 
 @bot.event
