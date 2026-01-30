@@ -607,7 +607,7 @@ async def send_join_dm(member):
 @bot.event
 async def on_ready():
     try:
-        activity = discord.Game(name="/help • 100+ Servers!")
+        activity = discord.Game(name="!finest store)
         await bot.change_presence(
             status=discord.Status.online,
             activity=activity
@@ -699,7 +699,7 @@ async def update_status():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
-            name=f"{guild.member_count} users | Valid Subs"
+            name=f"{guild.member_count} users | !finest store"
         )
     )
 # ================= LOCK SERVER =================
