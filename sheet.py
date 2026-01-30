@@ -52,7 +52,7 @@ def find_user_row(discord_id: str):
 def update_role_assigned(row_number: int):
     try:
         sheet = client.open_by_key(SHEET_ID).sheet1
-        sheet.update(f"N{row_number}", "TRUE")
+        sheet.update(f"N{row_number}", [["TRUE"]])
     except Exception as e:
         print("[ROLE UPDATE ERROR]", e)
 
@@ -60,7 +60,7 @@ def update_role_assigned(row_number: int):
 def update_ticket_opened(row_number: int):
     try:
         sheet = client.open_by_key(SHEET_ID).sheet1
-        sheet.update(f"O{row_number}", "TRUE")
+        sheet.update(f"N{row_number}", [["TRUE"]])
     except Exception as e:
         print("[TICKET UPDATE ERROR]", e)
 
