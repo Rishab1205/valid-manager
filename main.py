@@ -28,6 +28,22 @@ from datetime import datetime
 import requests
 from discord.ext.commands import has_role
 
+# ================= GOOGLE SHEETS CLIENT (STEP 2) =================
+import gspread
+from google.oauth2.service_account import Credentials
+
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+creds = Credentials.from_service_account_info(
+    json.loads(os.getenv("GOOGLE_CREDS_JSON")),
+    scopes=SCOPES
+)
+
+client = gspread.authorize(creds)
+
 STORE_CHANNEL_ID = 1466027151978401929
 TICKET_CATEGORY_ID = 1466111437469651175
 ARCHIVE_CATEGORY_ID = 1464761039769042955
@@ -482,19 +498,21 @@ async def process_member(member):
         except:
             print("[ROLE ERROR] Failed to assign paid role.")
 
-    # Update sheet
+   # ================= SAFE SHEET UPDATE (STEP 2 FIX) =================
+try:
     update_role_assigned(row_index)
     from sheet import update_profile_sheet
     await update_profile_sheet(member, row)
+except Exception as e:
+    print("[SHEET ERROR]", e)
 
-    # Create ticket + DM for paid
-    if status:
-        ticket = await create_ticket(member, header, row)
-        if ticket:
-            await send_payment_dm(member, ticket)
-        return ticket
+# ================= CREATE TICKET + SEND DM =================
+if status:
+    ticket = await create_ticket(member, header, row)
+    if ticket:
+        await send_payment_dm(member, ticket)
+    return ticket
 
-    return None
 
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
