@@ -562,6 +562,21 @@ async def on_ready():
         except Exception as e:
             print(f"❌ Sync failed for {guild.name}: {e}")
 
+async def is_freepack_user(discord_id):
+    try:
+        await authSheets()
+        await doc.loadInfo()
+        sheet = doc.sheetsByIndex[0]
+
+        rows = await sheet.getRows()
+        for row in rows:
+            if row.get("Discord ID") == str(discord_id) and row.get("Product") == "FREE PACK":
+                return True
+    except Exception as e:
+        print("[FREEPACK SHEET ERROR]", e)
+
+    return False
+
 @bot.event
 async def on_member_join(member):
     now = time.time()
@@ -574,6 +589,23 @@ async def on_member_join(member):
         await lock_server(member.guild)
 
     await send_join_dm(member)
+
+     # ================= FREE PACK ROLE SYSTEM (STEP 4) =================
+    if await is_freepack_user(member.id):
+
+        role = discord.utils.get(member.guild.roles, name="FreePack")
+
+        if role:
+            await member.add_roles(role)
+            print(f"✅ FreePack role given to {member}")
+
+            try:
+                await member.send(
+                    "🎁 **Free Pack Unlocked!**\n"
+                    "You can now access the **#free-pack** channel to download."
+                )
+            except:
+                pass
 
     # ================= FREE PACK SYSTEM (STEP 2) =================
     if str(member.id) in freeClaimUsers:
