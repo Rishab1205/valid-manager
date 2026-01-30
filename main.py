@@ -621,12 +621,12 @@ async def uptime_cmd(interaction: Interaction):
     delta = datetime.datetime.utcnow() - start_time
     await interaction.response.send_message(f"⏳ Bot Uptime: `{delta}`")
 
-@@tree.command(name="refresh", description="Sync your purchase & unlock access")
-async def refresh_cmd(interaction: Interaction):
+@tree.command(name="refresh", description="Sync your purchase & unlock access")
+async def refresh_cmd(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     member = interaction.user
-    ticket = await process_member(member)
+    ticket = await process_member(member)  # ✅ USE EXISTING FUNCTION
 
     if ticket:
         await interaction.followup.send(
@@ -635,9 +635,10 @@ async def refresh_cmd(interaction: Interaction):
         )
     else:
         await interaction.followup.send(
-            "❌ No paid record found yet.\nIf you already paid, wait 1–2 mins and try again.",
+            "❌ No paid record found yet.\nIf you already paid, wait 1–2 minutes and try again.",
             ephemeral=True
         )
+
 
 @tree.command(name="profile", description="View your Finest profile")
 async def profile_cmd(interaction: discord.Interaction):
