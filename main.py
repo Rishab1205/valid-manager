@@ -50,6 +50,9 @@ TICKET_CATEGORY_ID = 1466111437469651175
 ARCHIVE_CATEGORY_ID = 1464761039769042955
 STAFF_ROLE_ID = 1464249885669851360
 
+FREEPACK_CHANNEL_ID = 1466739215944646769  # ← PUT YOUR CHANNEL ID HERE
+FREEPACK_DRIVE_LINK = "https://drive.google.com/drive/folders/1U2HmT-dxRzM-_ruDyzWCQiHhUKKlcXpT?usp=sharing"
+
 PACK_CATEGORIES = {
     "standard": [
         "Optimization Pack",
@@ -572,22 +575,37 @@ async def on_member_join(member):
 
     await send_join_dm(member)
 
-    # free pack system untouched
-    if str(member.id) in freeClaimUsers:
-        data = freeClaimUsers[str(member.id)]
-        try:
-            async with aiohttp.ClientSession() as session:
-                await session.post("http://localhost:3000/freepack-unlock", json={"discord_id": str(member.id)})
-        except Exception as e:
-            print("[FREEPACK ERROR] Backend unlock failed:", e)
-        try:
-            await member.send(f"🎁 **Free Pack Unlocked!**\nHere is your download link:\n{data['drive']}")
-        except:
-            pass
-        freeClaimUsers.pop(str(member.id), None)
+# free pack system (DISCORD CHANNEL DELIVERY)
+if str(member.id) in freeClaimUsers:
+    data = freeClaimUsers[str(member.id)]
 
-    # ⭐ ALWAYS PROCESS MEMBERS (PAID LOGIC)
-    await process_member(member)
+    # 1️⃣ Unlock on backend
+    try:
+        async with aiohttp.ClientSession() as session:
+            await session.post(
+                "http://localhost:3000/freepack-unlock",
+                json={"discord_id": str(member.id)}
+            )
+    except Exception as e:
+        print("[FREEPACK ERROR] Backend unlock failed:", e)
+
+    # 2️⃣ Send Drive link in Discord channel
+    channel = bot.get_channel(FREEPACK_CHANNEL_ID)
+
+    if channel:
+        await channel.send(
+            f"🎁 **Free Pack Unlocked!**\n"
+            f"Welcome {member.mention} 👋\n\n"
+            f"👉 **Download here:**\n"
+            f"{FREEPACK_DRIVE_LINK}\n\n"
+            f"⚠️ *Do not share this link outside the server.*"
+        )
+
+    # 3️⃣ Cleanup
+    freeClaimUsers.pop(str(member.id), None)
+
+# ⭐ ALWAYS PROCESS MEMBERS (PAID LOGIC)
+await process_member(member)
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
