@@ -607,7 +607,7 @@ async def send_join_dm(member):
 @bot.event
 async def on_ready():
     try:
-        activity = discord.Game(name="!finest store)
+        activity = discord.Game(name="!finest store")
         await bot.change_presence(
             status=discord.Status.online,
             activity=activity
