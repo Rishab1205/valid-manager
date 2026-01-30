@@ -490,7 +490,7 @@ async def process_member(member):
     PAID_KEYWORDS = ("paid", "success", "completed", "done")
     status = any(word in raw_status for word in PAID_KEYWORDS)
 
-    # ✅ ROLE ASSIGN
+    # ================= ROLE ASSIGN =================
     member_role = guild.get_role(MEMBER_ROLE_ID)
     if status and member_role:
         try:
@@ -498,7 +498,7 @@ async def process_member(member):
         except Exception as e:
             print("[ROLE ERROR]", e)
 
-    # ✅ SHEET UPDATE (SAFE)
+    # ================= STEP 2 (THIS IS IT) =================
     try:
         update_role_assigned(row_index)
         from sheet import update_profile_sheet
@@ -506,12 +506,14 @@ async def process_member(member):
     except Exception as e:
         print("[SHEET ERROR]", e)
 
-    # ✅ TICKET + DM
+    # ================= TICKET + DM =================
     if status:
         ticket = await create_ticket(member, header, row)
         if ticket:
             await send_payment_dm(member, ticket)
         return ticket
+
+    return None
 
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
