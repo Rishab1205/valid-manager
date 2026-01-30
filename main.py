@@ -575,36 +575,36 @@ async def on_member_join(member):
 
     await send_join_dm(member)
 
-# free pack system (DISCORD CHANNEL DELIVERY)
-if str(member.id) in freeClaimUsers:
-    data = freeClaimUsers[str(member.id)]
+    # ================= FREE PACK SYSTEM (STEP 2) =================
+    if str(member.id) in freeClaimUsers:
+        data = freeClaimUsers[str(member.id)]
 
-    # 1️⃣ Unlock on backend
-    try:
-        async with aiohttp.ClientSession() as session:
-            await session.post(
-                "http://localhost:3000/freepack-unlock",
-                json={"discord_id": str(member.id)}
+        # 1️⃣ Unlock on backend
+        try:
+            async with aiohttp.ClientSession() as session:
+                await session.post(
+                    "http://localhost:3000/freepack-unlock",
+                    json={"discord_id": str(member.id)}
+                )
+        except Exception as e:
+            print("[FREEPACK ERROR] Backend unlock failed:", e)
+
+        # 2️⃣ Send Drive link in Discord channel
+        channel = bot.get_channel(FREEPACK_CHANNEL_ID)
+        if channel:
+            await channel.send(
+                f"🎁 **Free Pack Unlocked!**\n"
+                f"Welcome {member.mention} 👋\n\n"
+                f"👉 **Download here:**\n"
+                f"{FREEPACK_DRIVE_LINK}\n\n"
+                f"⚠️ *Do not share this link outside the server.*"
             )
-    except Exception as e:
-        print("[FREEPACK ERROR] Backend unlock failed:", e)
 
-    # 2️⃣ Send Drive link in Discord channel
-    channel = bot.get_channel(FREEPACK_CHANNEL_ID)
-    if channel:
-        await channel.send(
-            f"🎁 **Free Pack Unlocked!**\n"
-            f"Welcome {member.mention} 👋\n\n"
-            f"👉 **Download here:**\n"
-            f"{FREEPACK_DRIVE_LINK}\n\n"
-            f"⚠️ *Do not share this link outside the server.*"
-        )
+        # 3️⃣ Cleanup
+        freeClaimUsers.pop(str(member.id), None)
 
-    # 3️⃣ Cleanup
-    freeClaimUsers.pop(str(member.id), None)
-
-# ⭐ ALWAYS PROCESS MEMBERS (PAID LOGIC)
-await process_member(member)
+    # ⭐ PAID LOGIC ALWAYS RUNS
+    await process_member(member)
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
