@@ -495,9 +495,9 @@ async def send_payment_dm(member, ticket_channel):
         embed.add_field(name="💳 Next Step", value=f"Upload screenshot in <#{PAYOUT_CHANNEL_ID}>", inline=False)
         embed.set_footer(text="✨ Thanks for choosing FINEST — Performance is personal")
         await member.send(embed=embed)
-    except Exception as e:
-        print("[DM-ERROR] Payment DM:", e)
-
+   except Exception as e:
+    print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
+)
 # ================= ROLE + ACCESS LOGIC =================
 async def process_member(member):
     row_index, header, row = find_user_row(str(member.id))
@@ -512,13 +512,11 @@ async def process_member(member):
     status = any(word in raw_status for word in PAID_KEYWORDS)
 
     # ================= ROLE ASSIGN =================
-    member_role = guild.get_role(MEMBER_ROLE_ID)
-    if status and member_role:
-        try:
-            await member.add_roles(member_role)
-        except Exception as e:
-            print("[ROLE ERROR]", e)
-
+    paid_role = guild.get_role(FINEST_MEMBER_ROLE)
+    if status and paid_role:
+        await member.add_roles(paid_role)
+        print("✅ Paid role assigned") 
+        
     # ================= STEP 2 (THIS IS IT) =================
     try:
         update_role_assigned(row_index)
@@ -571,10 +569,10 @@ async def send_join_dm(member):
         )
         embed.set_footer(text="VALID DC • Established for serious players")
         await member.send(embed=embed)
-    except Exception as e:
-        print("[DM-ERROR] Onboarding DM:", e)
+  except Exception as e:
+    print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
 
-# ================= EVENTS =================
+=== EVENTS =================
 @bot.event
 async def on_ready():
     await tree.sync()
