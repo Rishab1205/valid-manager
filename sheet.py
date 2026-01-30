@@ -1,172 +1,95 @@
 import os
+import json
+import datetime
+import gspread
 from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+# ================= CONFIG =================
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
 SHEET_ID = os.getenv("SHEET_ID")
-PRIMARY_FIELD = os.getenv("PRIMARY_FIELD", "Discord ID")
+PROFILE_SHEET_ID = os.getenv("PROFILE_SHEET_ID")
+PROFILE_TAB_NAME = "Profiles"
+PRIMARY_FIELD = "Discord ID"
 
-def get_sheet_service():
-    creds = Credentials.from_service_account_info({
-        "type": "service_account",
-        "project_id": os.getenv("GOOGLE_PROJECT_ID"),
-        "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
-        "private_key": os.getenv("GOOGLE_PRIVATE_KEY").replace("\\n", "\n"),
-        "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_CERT_URL")
-    }, scopes=SCOPES)
+# ================= AUTH =================
+creds = Credentials.from_service_account_info(
+    json.loads(os.getenv("GOOGLE_CREDS_JSON")),
+    scopes=SCOPES
+)
 
-    return build("sheets", "v4", credentials=creds).spreadsheets()
+client = gspread.authorize(creds)
 
-
+# ================= CORE FUNCTIONS =================
 def find_user_row(discord_id: str):
-    service = get_sheet_service()
-    result = service.values().get(
-        spreadsheetId=SHEET_ID,
-        range="Sheet1!A1:Z5000"
-    ).execute()
+    try:
+        sheet = client.open_by_key(SHEET_ID).sheet1
+        rows = sheet.get_all_values()
 
-    rows = result.get("values", [])
-    if not rows:
-        return None, None, None
+        if not rows:
+            return None, None, None
 
-    header = rows[0]
-    if PRIMARY_FIELD not in header:
-        return None, None, None
+        header = rows[0]
+        if PRIMARY_FIELD not in header:
+            print("[SHEET ERROR] Discord ID column missing")
+            return None, None, None
 
-    col_index = header.index(PRIMARY_FIELD)
+        idx = header.index(PRIMARY_FIELD)
 
-    for i, row in enumerate(rows[1:], start=2):
-        if len(row) > col_index and row[col_index] == discord_id:
-            return i, header, row
+        for row_num, row in enumerate(rows[1:], start=2):
+            if len(row) > idx and row[idx].strip() == discord_id:
+                return row_num, header, row
+
+    except Exception as e:
+        print("[FIND USER ERROR]", e)
 
     return None, None, None
+
+
 def update_role_assigned(row_number: int):
-    service = get_sheet_service()
-    service.values().update(
-        spreadsheetId=SHEET_ID,
-        range=f"Sheet1!N{row_number}",
-        valueInputOption="USER_ENTERED",
-        body={"values": [["TRUE"]]}
-    ).execute()
+    try:
+        sheet = client.open_by_key(SHEET_ID).sheet1
+        sheet.update(f"N{row_number}", "TRUE")
+    except Exception as e:
+        print("[ROLE UPDATE ERROR]", e)
 
 
 def update_ticket_opened(row_number: int):
-    service = get_sheet_service()
-    service.values().update(
-        spreadsheetId=SHEET_ID,
-        range=f"Sheet1!O{row_number}",
-        valueInputOption="USER_ENTERED",
-        body={"values": [["TRUE"]]}
-    ).execute()
-
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-
-# ⚙️ AUTH & SHEET SERVICE
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-import json
-from google.oauth2.service_account import Credentials
-
-creds_info = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
-creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
-
-service = build("sheets", "v4", credentials=creds)
-
-def get_profile(discord_id: str):
-    """
-    Fetches a profile row by Discord ID from the Profiles tab.
-    Returns: dict or None
-    """
     try:
-        sheet = service.spreadsheets()
-        result = sheet.values().get(
-            spreadsheetId=PROFILE_SHEET_ID,
-            range=f"{PROFILE_TAB_NAME}!A:F"
-        ).execute()
-
-        rows = result.get("values", [])
-        if not rows:
-            return None
-
-        headers = rows[0]
-        for row in rows[1:]:
-            row_data = dict(zip(headers, row))
-            if row_data.get("DiscordID") == discord_id:
-                return row_data
-
-        return None
+        sheet = client.open_by_key(SHEET_ID).sheet1
+        sheet.update(f"O{row_number}", "TRUE")
     except Exception as e:
-        print("[SHEET-PROFILE-ERROR]", e)
-        return None
-# ============= PROFILE FUNCTIONS =============
+        print("[TICKET UPDATE ERROR]", e)
 
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-
-PROFILE_TAB = "Sheet1"  # confirmed by user
-
-def get_profile(discord_id: str):
-    try:
-        creds = Credentials.from_service_account_info(SERVICE_JSON, scopes=SCOPES)
-        service = build("sheets", "v4", credentials=creds)
-        sheet = service.spreadsheets()
-
-        result = sheet.values().get(
-            spreadsheetId=SPREADSHEET_ID,
-            range=f"{PROFILE_TAB}!A2:Z999"
-        ).execute()
-
-        rows = result.get('values', [])
-        purchases = []
-
-        for row in rows:
-            row_map = dict(zip(HEADERS, row))
-            if row_map.get("Discord ID") == discord_id:
-                purchases.append({
-                    "product": row_map.get("Product", "Unknown"),
-                    "status": row_map.get("Status", "Unknown"),
-                    "payment_id": row_map.get("Payment ID", "N/A"),
-                    "timestamp": row_map.get("Timestamp", "N/A")
-                })
-
-        return purchases
-
-    except Exception as e:
-        print("[PROFILE ERROR]", e)
-        return None
 
 def update_profile_sheet(member, row):
-    sheet = client.open_by_key(SHEET_ID)
-    tab = sheet.worksheet("Profiles")
+    try:
+        sheet = client.open_by_key(PROFILE_SHEET_ID)
+        tab = sheet.worksheet(PROFILE_TAB_NAME)
 
-    # Extract from Sheet1 purchase row
-    discord_id = row[4]
-    name = row[1]
-    email = row[2]
-    username = row[3]
-    product = row[5]
-    status = row[8]
-    
-    # Format final row
-    final = [
-        discord_id,
-        name,
-        username,
-        email,
-        product,
-        datetime.datetime.now().strftime("%Y-%m-%d"),
-        status
-    ]
-    
-    # Check if already exists
-    existing = tab.col_values(1)
-    if discord_id in existing:
-        idx = existing.index(discord_id) + 1
-        tab.update(f"A{idx}:G{idx}", [final])
-    else:
-        tab.append_row(final)
+        discord_id = row[0]
+        product = row[5]
+        status = row[8]
+
+        final_row = [
+            discord_id,
+            member.name,
+            member.display_name,
+            "N/A",
+            product,
+            datetime.datetime.now().strftime("%Y-%m-%d"),
+            status
+        ]
+
+        existing = tab.col_values(1)
+        if discord_id in existing:
+            idx = existing.index(discord_id) + 1
+            tab.update(f"A{idx}:G{idx}", [final_row])
+        else:
+            tab.append_row(final_row)
+
+    except Exception as e:
+        print("[PROFILE UPDATE ERROR]", e)
