@@ -603,31 +603,18 @@ async def send_join_dm(member):
 
     except Exception as e:
         print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
-
+        
 @bot.event
 async def on_ready():
     try:
-        await tree.sync()
-        print("✅ Bot online")
-
-        channel = bot.get_channel(STORE_CHANNEL_ID)
-        if channel:
-            await channel.send(
-                embed=finest_store_embed(),
-                view=CategoryView()
-            )
+        await tree.sync()  # ✅ GLOBAL ONLY
+        print("✅ Bot online & global commands synced")
 
         update_status.start()
 
-        for guild in bot.guilds:
-            try:
-                await tree.sync(guild=discord.Object(id=GUILD_ID))
-                print(f"🔗 Synced slash commands to → {guild.name}")
-            except Exception as e:
-                print(f"❌ Guild sync failed for {guild.name}: {e}")
-
     except Exception as e:
         print("❌ on_ready failed:", repr(e))
+
         
 @bot.event
 async def on_member_join(member):
