@@ -519,34 +519,34 @@ async def send_payment_dm(member, ticket_channel):
 # ================= ROLE + ACCESS LOGIC =================
 async def process_member(member):
     try:
-        result = find_user_row(str(member.id))
-        if not result:
+        row_index, header, row = find_user_row(str(member.id))
+        if not row_index:
             print("❌ No sheet row found yet for", member.id)
             return None
 
-        row_index, header, row = result
-        data = dict(zip(header, row))
+        try:
+            status_col = header.index("Status")
+            raw_status = row[status_col].strip().lower()
+        except Exception:
+            raw_status = ""
 
-        raw_status = str(data.get("Status", "")).strip().lower()
         status = raw_status in ("paid", "success", "completed", "done")
+        print("🧾 Payment status:", raw_status)
 
         guild = member.guild
         paid_role = guild.get_role(FINEST_MEMBER_ROLE)
 
-        # ================= ROLE ASSIGN =================
         if status and paid_role and paid_role not in member.roles:
             await member.add_roles(paid_role)
             print("✅ Finest role assigned")
 
-        # ================= SHEET UPDATE (NON-BLOCKING) =================
         try:
             update_role_assigned(row_index)
             from sheet import update_profile_sheet
-            await update_profile_sheet(member, row)
+            update_profile_sheet(member, row)
         except Exception as e:
             print("[SHEET ERROR]", e)
 
-        # ================= TICKET + DM =================
         if status:
             ticket = await create_ticket(member, header, row)
             if ticket:
@@ -554,7 +554,7 @@ async def process_member(member):
                 print("✅ Ticket + DM sent")
                 return ticket
 
-        print("❌ Status not paid yet:", raw_status)
+        print("❌ Status not paid:", raw_status)
         return None
 
     except Exception as e:
