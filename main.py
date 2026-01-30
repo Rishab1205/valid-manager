@@ -15,6 +15,7 @@ def run_web(): app.run(host='0.0.0.0', port=8080)
 def keep_alive(): Thread(target=run_web).start()
 
 # ================= DISCORD =================
+import json
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands, ui, Interaction, ButtonStyle
