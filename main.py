@@ -593,23 +593,28 @@ async def send_join_dm(member):
 === EVENTS =================
 @bot.event
 async def on_ready():
-    await tree.sync()
-    print("Bot online")
+    try:
+        await tree.sync()
+        print("✅ Bot online")
 
-    channel = bot.get_channel(STORE_CHANNEL_ID)
-    if channel:
-        await channel.send(
-            embed=finest_store_embed(),
-            view=CategoryView()
-        )
+        channel = bot.get_channel(STORE_CHANNEL_ID)
+        if channel:
+            await channel.send(
+                embed=finest_store_embed(),
+                view=CategoryView()
+            )
 
-    update_status.start()
-    for guild in bot.guilds:
-        try:
-            await tree.sync(guild=discord.Object(id=GUILD_ID))
-            print(f"🔗 Synced slash commands to → {guild.name}")
-        except Exception as e:
-            print(f"❌ Sync failed for {guild.name}: {e}")
+        update_status.start()
+
+        for guild in bot.guilds:
+            try:
+                await tree.sync(guild=discord.Object(id=GUILD_ID))
+                print(f"🔗 Synced slash commands to → {guild.name}")
+            except Exception as e:
+                print(f"❌ Guild sync failed for {guild.name}: {e}")
+
+    except Exception as e:
+        print("❌ on_ready failed:", repr(e))
 
 @bot.event
 async def on_member_join(member):
