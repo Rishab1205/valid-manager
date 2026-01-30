@@ -466,8 +466,8 @@ async def send_payment_dm(member, ticket_channel):
     await asyncio.sleep(1)  # delay for Discord DM handshake
     try:
         embed = discord.Embed(
-            title="🎉 Payment Confirmed!",
-            description=f"Hey **{member.name}** 👋\nYour purchase was successful!",
+            title="<:vg12:1466375282154803220> Payment Confirmed!",
+            description=f"Hey **{member.name}** <a:kami_crown:1214643796671733780>\nYour purchase was successful!",
             color=0x2ECC71
         )
         embed.add_field(name="📁 Ticket", value=f"{ticket_channel.mention}", inline=False)
@@ -519,15 +519,15 @@ async def process_member(member):
 async def send_join_dm(member):
     try:
         embed = discord.Embed(
-            title="👋 Welcome to VALID DC",
+            title="<:vg12:1466375282154803220> Welcome to VALID DC",
             description=(
-                f"Hey **{member.name}**, welcome aboard! 🎭\n\n"
+                f"Hey **{member.name}**, welcome aboard! <:Discord_animated_logo:1109330997230719076>\n\n"
                 "You're now part of a community built for gamers who respect:\n"
                 "• Performance\n"
                 "• Discipline\n"
                 "• Clean gameplay\n\n"
                 "**Useful Areas**\n"
-                "🏷️ Main Chat — `#chat`\n"
+                "<:bookrules:1069318021543383161> Main Chat — `#chat`\n"
                 "⚙ Support — Open ticket anytime\n\n"
                 "If you ever need help — staff are one ticket away ❤️"
             ),
