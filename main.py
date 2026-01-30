@@ -50,6 +50,8 @@ TICKET_CATEGORY_ID = 1466111437469651175
 ARCHIVE_CATEGORY_ID = 1464761039769042955
 STAFF_ROLE_ID = 1464249885669851360
 
+FREEPACK_ROLE_ID = 1466768164359639175
+
 FREEPACK_CHANNEL_ID = 1466739215944646769  # ← PUT YOUR CHANNEL ID HERE
 FREEPACK_DRIVE_LINK = "https://drive.google.com/drive/folders/1U2HmT-dxRzM-_ruDyzWCQiHhUKKlcXpT?usp=sharing"
 
@@ -582,30 +584,38 @@ async def on_member_join(member):
     now = time.time()
     join_tracker.append(now)
 
+    # ===== ANTI RAID LOGIC =====
     while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
         join_tracker.popleft()
 
     if len(join_tracker) >= RAID_JOIN_LIMIT:
         await lock_server(member.guild)
 
+    # ===== WELCOME DM =====
     await send_join_dm(member)
 
-     # ================= FREE PACK ROLE SYSTEM (STEP 4) =================
-    if await is_freepack_user(member.id):
+    # ===== FREE PACK ROLE SYSTEM =====
+    try:
+        is_freepack = await check_freepack_sheet(member.id)
+        if is_freepack:
+            role = member.guild.get_role(FREEPACK_ROLE_ID)
 
-        role = discord.utils.get(member.guild.roles, name="FreePack")
+            if role:
+                await member.add_roles(role)
+                print(f"✅ FreePack role assigned to {member} ({member.id})")
 
-        if role:
-            await member.add_roles(role)
-            print(f"✅ FreePack role given to {member}")
-
-            try:
-                await member.send(
-                    "🎁 **Free Pack Unlocked!**\n"
-                    "You can now access the **#free-pack** channel to download."
-                )
-            except:
-                pass
+                # Optional confirmation DM
+                try:
+                    await member.send(
+                        "🎁 **Free Pack Unlocked!**\n"
+                        "You now have access to the **Free Pack** channel."
+                    )
+                except:
+                    pass
+            else:
+                print("❌ FreePack role not found (check ROLE ID)")
+    except Exception as e:
+        print("❌ FreePack role error:", e)
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
