@@ -609,36 +609,48 @@ async def on_member_join(member):
 
     await send_join_dm(member)
 
-# free pack system (DISCORD CHANNEL DELIVERY)
-if str(member.id) in freeClaimUsers:
-    data = freeClaimUsers[str(member.id)]
+    # ================= FREE PACK HANDLER =================
+    if str(member.id) in freeClaimUsers:
+        print("🎁 Freepack user joined:", member.id)
 
-    # 1️⃣ Unlock on backend
-    try:
-        async with aiohttp.ClientSession() as session:
-            await session.post(
-                "http://localhost:3000/freepack-unlock",
-                json={"discord_id": str(member.id)}
+        # 1️⃣ Unlock backend record
+        try:
+            async with aiohttp.ClientSession() as session:
+                await session.post(
+                    "http://localhost:3000/freepack-unlock",
+                    json={"discord_id": str(member.id)}
+                )
+        except Exception as e:
+            print("[FREEPACK ERROR] Backend unlock failed:", e)
+
+        # 2️⃣ Assign FREE PACK role
+        try:
+            role = member.guild.get_role(1466768164359639175)
+            if role:
+                await member.add_roles(role)
+                print("✅ Freepack role assigned")
+            else:
+                print("❌ Freepack role not found")
+        except Exception as e:
+            print("[ROLE ERROR]", e)
+
+        # 3️⃣ Send Drive link in channel
+        channel = bot.get_channel(FREEPACK_CHANNEL_ID)
+        if channel:
+            await channel.send(
+                f"🎁 **Free Pack Unlocked!**\n"
+                f"Welcome {member.mention} 👋\n\n"
+                f"👉 **Download here:**\n"
+                f"{FREEPACK_DRIVE_LINK}\n\n"
+                f"⚠️ *Do not share this link outside the server.*"
             )
-    except Exception as e:
-        print("[FREEPACK ERROR] Backend unlock failed:", e)
 
-    # 2️⃣ Send Drive link in Discord channel
-    channel = bot.get_channel(FREEPACK_CHANNEL_ID)
-    if channel:
-        await channel.send(
-            f"🎁 **Free Pack Unlocked!**\n"
-            f"Welcome {member.mention} 👋\n\n"
-            f"👉 **Download here:**\n"
-            f"{FREEPACK_DRIVE_LINK}\n\n"
-            f"⚠️ *Do not share this link outside the server.*"
-        )
+        # 4️⃣ Cleanup
+        freeClaimUsers.pop(str(member.id), None)
 
-    # 3️⃣ Cleanup
-    freeClaimUsers.pop(str(member.id), None)
+    # ================= PAID PACK HANDLER =================
+    await process_member(member)
 
-# ⭐ ALWAYS PROCESS MEMBERS (PAID LOGIC)
-await process_member(member)
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
 async def update_status():
