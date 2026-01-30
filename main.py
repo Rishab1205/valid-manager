@@ -536,6 +536,21 @@ async def process_member(member):
         return ticket
 
     return None
+    
+# ================= PAID PACK AUTO-DETECT (NEW USERS) =================
+async def delayed_process_member(member):
+    await asyncio.sleep(8)  # allow Google Sheet to sync
+
+    for attempt in range(3):
+        result = await process_member(member)
+        if result:
+            print("✅ Paid user processed successfully")
+            return
+
+        print(f"⏳ Retry paid check ({attempt + 1}/3)")
+        await asyncio.sleep(5)
+
+    print("❌ Paid user not found after retries")
 
 # ================= ONBOARDING DM =================
 async def send_join_dm(member):
@@ -648,8 +663,9 @@ async def on_member_join(member):
         # 4️⃣ Cleanup
         freeClaimUsers.pop(str(member.id), None)
 
-    # ================= PAID PACK HANDLER =================
-    await process_member(member)
+    # ================= PAID PACK HANDLER (FIXED) =================
+    asyncio.create_task(delayed_process_member(member))
+
 
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
