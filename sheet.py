@@ -23,28 +23,27 @@ def get_sheet_service():
     return build("sheets", "v4", credentials=creds).spreadsheets()
 
 
-def find_user_row(discord_id: str):
-    service = get_sheet_service()
-    result = service.values().get(
-        spreadsheetId=SHEET_ID,
-        range="Sheet1!A1:Z5000"
-    ).execute()
+def find_user_row(discord_id):
+    try:
+        sheet = client.open_by_key(SHEET_ID).sheet1
+        records = sheet.get_all_records()
 
-    rows = result.get("values", [])
-    if not rows:
-        return None, None, None
+        print("🔎 Looking for Discord ID:", discord_id)
 
-    header = rows[0]
-    if PRIMARY_FIELD not in header:
-        return None, None, None
+        for i, row in enumerate(records, start=2):
+            print("ROW CHECK:", row)
 
-    col_index = header.index(PRIMARY_FIELD)
+            if str(row.get("Discord ID")).strip() == str(discord_id).strip():
+                print("✅ MATCH FOUND AT ROW", i)
+                return i, list(row.keys()), list(row.values())
 
-    for i, row in enumerate(rows[1:], start=2):
-        if len(row) > col_index and row[col_index] == discord_id:
-            return i, header, row
+        print("❌ No matching Discord ID found")
+
+    except Exception as e:
+        print("[FIND USER ERROR]", e)
 
     return None, None, None
+
 
 
 def update_role_assigned(row_number: int):
