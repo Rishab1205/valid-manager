@@ -601,33 +601,44 @@ async def on_member_join(member):
     now = time.time()
     join_tracker.append(now)
 
-    # ===== ANTI RAID =====
     while join_tracker and now - join_tracker[0] > RAID_TIME_WINDOW:
         join_tracker.popleft()
 
     if len(join_tracker) >= RAID_JOIN_LIMIT:
         await lock_server(member.guild)
 
-    # ===== WELCOME DM =====
     await send_join_dm(member)
 
-    # ===== PAID PACK PROCESSING (CRITICAL FIX) =====
-    try:
-        await process_member(member)  # 🔥 THIS WAS MISSING
-    except Exception as e:
-        print("[PAID ROLE ERROR]", e)
+# free pack system (DISCORD CHANNEL DELIVERY)
+if str(member.id) in freeClaimUsers:
+    data = freeClaimUsers[str(member.id)]
 
-    # ===== FREE PACK ROLE =====
+    # 1️⃣ Unlock on backend
     try:
-        is_freepack = await check_freepack_sheet(member.id)
-        if is_freepack:
-            role = member.guild.get_role(FREEPACK_ROLE_ID)
-            if role:
-                await member.add_roles(role)
-                print(f"✅ FreePack role assigned → {member}")
+        async with aiohttp.ClientSession() as session:
+            await session.post(
+                "http://localhost:3000/freepack-unlock",
+                json={"discord_id": str(member.id)}
+            )
     except Exception as e:
-        print("[FREEPACK ROLE ERROR]", e)
+        print("[FREEPACK ERROR] Backend unlock failed:", e)
 
+    # 2️⃣ Send Drive link in Discord channel
+    channel = bot.get_channel(FREEPACK_CHANNEL_ID)
+    if channel:
+        await channel.send(
+            f"🎁 **Free Pack Unlocked!**\n"
+            f"Welcome {member.mention} 👋\n\n"
+            f"👉 **Download here:**\n"
+            f"{FREEPACK_DRIVE_LINK}\n\n"
+            f"⚠️ *Do not share this link outside the server.*"
+        )
+
+    # 3️⃣ Cleanup
+    freeClaimUsers.pop(str(member.id), None)
+
+# ⭐ ALWAYS PROCESS MEMBERS (PAID LOGIC)
+await process_member(member)
 # ================= PRESENCE =================
 @tasks.loop(minutes=2)
 async def update_status():
