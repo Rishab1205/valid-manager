@@ -590,7 +590,9 @@ async def send_join_dm(member):
 
     except Exception as e:
         print("❌ DM FAILED FOR", member.name, "REASON:", repr(e))
-=== EVENTS =================
+        
+================= EVENTS =================
+
 @bot.event
 async def on_ready():
     try:
