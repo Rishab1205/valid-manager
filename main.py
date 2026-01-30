@@ -607,6 +607,12 @@ async def send_join_dm(member):
 @bot.event
 async def on_ready():
     try:
+        activity = discord.Game(name="/help • 100+ Servers!")
+        await bot.change_presence(
+            status=discord.Status.online,
+            activity=activity
+        )
+        
         await tree.sync()
         print("✅ Bot online")
 
