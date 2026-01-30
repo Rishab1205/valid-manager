@@ -607,24 +607,31 @@ async def send_join_dm(member):
 @bot.event
 async def on_ready():
     try:
+        # 🔹 Presence (instant)
         activity = discord.Game(name="!finest store")
         await bot.change_presence(
             status=discord.Status.online,
             activity=activity
         )
-        
+
+        # 🔹 Slash commands (global)
         await tree.sync()
         print("✅ Bot online")
 
+        # 🔹 Store embed (send once)
         channel = bot.get_channel(STORE_CHANNEL_ID)
-        if channel:
+        if channel and not hasattr(bot, "store_posted"):
             await channel.send(
                 embed=finest_store_embed(),
                 view=CategoryView()
             )
+            bot.store_posted = True
 
-        update_status.start()
+        # 🔹 Auto status updater (safe start)
+        if not update_status.is_running():
+            update_status.start()
 
+        # 🔹 Guild-specific sync (fast propagation)
         for guild in bot.guilds:
             try:
                 await tree.sync(guild=discord.Object(id=GUILD_ID))
@@ -634,6 +641,7 @@ async def on_ready():
 
     except Exception as e:
         print("❌ on_ready failed:", repr(e))
+
 
 @bot.event
 async def on_member_join(member):
@@ -699,7 +707,7 @@ async def update_status():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
-            name=f"{guild.member_count} users | !finest store"
+            name=f"{guild.member_count} users | finest store"
         )
     )
 # ================= LOCK SERVER =================
